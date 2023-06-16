@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   useWallet,
   DEFAULT_NODE_BASEURL,
@@ -7,7 +7,8 @@ import {
 } from "@txnlab/use-wallet";
 import algosdk from "algosdk";
 import axios from "axios";
-
+import { send } from "process";
+import { sendMail, createLicence } from "../LicenseProcessor"
 const algodClient = new algosdk.Algodv2(
   DEFAULT_NODE_TOKEN,
   DEFAULT_NODE_BASEURL,
@@ -18,31 +19,13 @@ const FRYIndex = 924268058;
 
 const capKey = "REDACTED_ROTATE_ME"
 const FRYCapID = 24874;
-async function fetchCryptoPrice() {
-    try {
-        const response = await axios.get('https://pro-api.coinmarketcap.com/v2/cryptocurrency/quotes/latest', {
-            params: {
-                id: FRYCapID,
-                convert: 'USD'
-            },
-            headers: {
-                'X-CMC_PRO_API_KEY': capKey
-            }
-        });
-        const price = response.data.data[FRYCapID].quote.USD.price;
-        return price;
-    } catch (error) {
-        console.error(error);
-    }
-}
-
-
-
 export default function Transact() {
   const { activeAddress, signTransactions, sendTransactions } = useWallet();
-
+  const [email, setEmail] = useState('');
+  const [valid, setValid] = useState(false);
   const sendTransaction = async (
-    from?: string
+    from: string,
+    email: string
   ) => {
     if (!from) {
       throw new Error("Missing transaction params.");
@@ -55,12 +38,12 @@ export default function Transact() {
     else return;
     const note = algosdk.encodeObj({ note: 'Payment from Pera Wallet' });
     const transaction = algosdk.makeAssetTransferTxnWithSuggestedParamsFromObject({
-        from,
-        to,
-        assetIndex: FRYIndex,
-        amount: price * 1000000,
-        note: note,
-        suggestedParams: params,
+      from,
+      to,
+      assetIndex: FRYIndex,
+      amount: price * 1000000,
+      note: note,
+      suggestedParams: params,
     });
     const encodedTransaction = algosdk.encodeUnsignedTransaction(transaction);
 
@@ -72,8 +55,10 @@ export default function Transact() {
       signedTransactions,
       waitRoundsToConfirm
     );
+    const license = await createLicence(from);
+    sendMail(email, license);
+    alert("Transaction sent! You will receive an email with your license key shortly.");
 
-    console.log("Successfully sent transaction. Transaction ID: ", id);
   };
 
   const buttonStyle = {
@@ -95,12 +80,47 @@ export default function Transact() {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+      <input
+        type="email"
+        value={email}
+        onChange={e => {
+          setEmail(e.target.value);
+          setValid(/\S+@\S+\.\S+/g.test(e.target.value));
+        }}
+        placeholder="Enter your email"
+        style={{
+          color: 'black',
+          padding: '10px',
+          marginBottom: '10px',
+        }}
+      />
       <button
-        onClick={() => sendTransaction(activeAddress)}
-        style={buttonStyle}
+        onClick={() => sendTransaction(activeAddress, email)}
+        style={{
+          ...buttonStyle,
+          backgroundColor: valid ? 'yellow' : 'grey',
+        }}
+        disabled={!valid}
       >
         Pay for the license (20 USD)
       </button>
     </div>
   );
+}
+async function fetchCryptoPrice() {
+  try {
+    const response = await axios.get('https://pro-api.coinmarketcap.com/v2/cryptocurrency/quotes/latest', {
+      params: {
+        id: FRYCapID,
+        convert: 'USD'
+      },
+      headers: {
+        'X-CMC_PRO_API_KEY': capKey
+      }
+    });
+    const price = response.data.data[FRYCapID].quote.USD.price;
+    return price;
+  } catch (error) {
+    console.error(error);
+  }
 }

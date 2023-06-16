@@ -30,7 +30,9 @@ export default function Connect() {
       
       {/* Always display the provider name and image */}
       <h4 style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <img width={30} height={30} alt="" src={provider.metadata.icon} />
+        <img width={30} height={30} alt="" src={provider.metadata.icon} style={{
+          marginRight: '10px',
+        }} />
         {provider.metadata.name} {provider.isActive && "[active]"}
       </h4>
       
