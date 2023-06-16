@@ -15,6 +15,7 @@ export default function Home() {
         position: 'relative'
       }}
     >
+      
        <nav
         style={{
           height: '106px',

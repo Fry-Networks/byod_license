@@ -25,3 +25,12 @@ body {
     )
     rgb(var(--background-start-rgb));
 }
+
+* {
+  font-family: 'Montserrat';
+}
+button {
+  box-shadow: 0 0 0 1px rgb(var(--foreground-rgb));
+  border-radius: 0.25rem;
+  padding: 0.5rem 1rem;
+}

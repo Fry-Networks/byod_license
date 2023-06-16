@@ -6,9 +6,7 @@ import {
   DEFAULT_NODE_PORT,
 } from "@txnlab/use-wallet";
 import algosdk from "algosdk";
-import axios from "axios";
-import { send } from "process";
-import { sendMail, createLicence } from "../LicenseProcessor"
+import { sendMail, createLicence, syncLicenses, fetchCryptoPrice } from "../LicenseProcessor"
 const algodClient = new algosdk.Algodv2(
   DEFAULT_NODE_TOKEN,
   DEFAULT_NODE_BASEURL,
@@ -16,9 +14,6 @@ const algodClient = new algosdk.Algodv2(
 );
 const USDAmount = 20;
 const FRYIndex = 924268058;
-
-const capKey = "REDACTED_ROTATE_ME"
-const FRYCapID = 24874;
 export default function Transact() {
   const { activeAddress, signTransactions, sendTransactions } = useWallet();
   const [email, setEmail] = useState('');
@@ -50,14 +45,19 @@ export default function Transact() {
     const signedTransactions = await signTransactions([encodedTransaction]);
 
     const waitRoundsToConfirm = 4;
-
-    const { id } = await sendTransactions(
-      signedTransactions,
-      waitRoundsToConfirm
-    );
-    const license = await createLicence(from);
-    sendMail(email, license);
-    alert("Transaction sent! You will receive an email with your license key shortly.");
+    try {
+      const { id } = await sendTransactions(
+        signedTransactions,
+        waitRoundsToConfirm
+      );
+      const license = await createLicence(from);
+      sendMail(email, license);
+      syncLicenses();
+      alert("Transaction sent! You will receive an email with your license key shortly.");
+    } catch (error) {
+      console.error(error);
+      alert("Transaction failed!");
+    }
 
   };
 
@@ -73,6 +73,13 @@ export default function Transact() {
     cursor: 'pointer',
     borderRadius: '5px', // This will make the button round
   };
+  
+
+
+
+
+
+
 
   if (!activeAddress) {
     return <p>Connect an account first.</p>;
@@ -92,6 +99,7 @@ export default function Transact() {
           color: 'black',
           padding: '10px',
           marginBottom: '10px',
+          borderRadius: '5px',
         }}
       />
       <button
@@ -106,21 +114,4 @@ export default function Transact() {
       </button>
     </div>
   );
-}
-async function fetchCryptoPrice() {
-  try {
-    const response = await axios.get('https://pro-api.coinmarketcap.com/v2/cryptocurrency/quotes/latest', {
-      params: {
-        id: FRYCapID,
-        convert: 'USD'
-      },
-      headers: {
-        'X-CMC_PRO_API_KEY': capKey
-      }
-    });
-    const price = response.data.data[FRYCapID].quote.USD.price;
-    return price;
-  } catch (error) {
-    console.error(error);
-  }
 }

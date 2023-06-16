@@ -1,7 +1,10 @@
 'use server';
 import Enmap from 'enmap';
 import nodemailer from 'nodemailer';
-const licenses = new Enmap({ name: 'licenses' });
+import axios from 'axios';
+const licenses: Enmap<string, string> = new Enmap({ name: 'licenses' });
+const capKey = "REDACTED_ROTATE_ME"
+const FRYCapID = 24874;
 
 export async function getLicence(address: string) {
     return licenses.get(address);
@@ -20,13 +23,43 @@ export async function createLicence(address:string) {
     return license
 }
 
+export async function syncLicenses() {
+    const {google} = require('googleapis');
+
+    const auth = new google.auth.GoogleAuth({
+        keyFile: '/path/to/your/downloaded/json/file.json', // Replace with path to your downloaded JSON file
+        scopes: ['https://www.googleapis.com/auth/spreadsheets'],
+    });
+
+    const client = await auth.getClient();
+
+    const googleSheets = google.sheets({version: 'v4', auth: client});
+
+    const spreadsheetId = '1F-bYXgD8RRgQcUzcjqr1CkzY84Zc-i_mE6HhDboCkzQ'; // Replace with your spreadsheet ID
+
+    const licensesToWrite = Array.from(licenses).map(([key, value]) => [key, value]);
+
+    // Add column headers to the beginning of the array
+    licensesToWrite.unshift(['Address', 'License']);
+
+    await googleSheets.spreadsheets.values.update({
+        spreadsheetId,
+        range: "FRY License!A1", // Adjust with your sheet name and range
+        valueInputOption: "USER_ENTERED", 
+        resource: {
+            values: licensesToWrite
+        }
+    });
+    return licensesToWrite;
+}
+
 export async function sendMail(email: string, license: string) {
 
     const transporter = nodemailer.createTransport({
         service: 'gmail',
         auth: {
             type: 'OAuth2',
-            user: 'your-email@your-domain.com',
+            user: 'contact@fryfoundation.com',
             clientId: 'YOUR_CLIENT_ID',
             clientSecret: 'YOUR_CLIENT_SECRET',
             refreshToken: 'YOUR_REFRESH_TOKEN',
@@ -34,9 +67,9 @@ export async function sendMail(email: string, license: string) {
     });
 
     const mailOptions = {
-        from: 'your-email@your-domain.com',
+        from: 'contact@fryfoundation.com',
         to: email,
-        subject: 'Hello from Node.js',
+        subject: 'BYOD License',
         text: license
     };
 
@@ -49,3 +82,21 @@ export async function sendMail(email: string, license: string) {
     });
 
 }
+
+export async function fetchCryptoPrice() {
+    try {
+      const response = await axios.get('https://pro-api.coinmarketcap.com/v2/cryptocurrency/quotes/latest', {
+        params: {
+          id: FRYCapID,
+          convert: 'USD'
+        },
+        headers: {
+          'X-CMC_PRO_API_KEY': capKey
+        }
+      });
+      const price = response.data.data[FRYCapID].quote.USD.price;
+      return price;
+    } catch (error) {
+      console.error(error);
+    }
+  }

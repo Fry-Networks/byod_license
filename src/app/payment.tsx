@@ -32,7 +32,7 @@ export default function Payment() {
             }}
         >
             <WalletProvider value={walletProviders} >
-                <div style={{ display: 'flex', flexDirection: 'column-reverse', padding: "20px" }}>
+                <div style={{ display: 'flex', flexDirection: 'column-reverse', padding: "20px", background: '#84808a', borderRadius: '10px', boxShadow: '0 0 10px 0 rgba(0, 0, 0, 0.2)' }}>
                     <div style={{
                         marginTop: '20px',
                     }}
