@@ -14,6 +14,7 @@ const algodClient = new algosdk.Algodv2(
 );
 const USDAmount = 20;
 const FRYIndex = 924268058;
+
 export default function Transact() {
   const { activeAddress, signTransactions, sendTransactions } = useWallet();
   const [email, setEmail] = useState('');
@@ -59,28 +60,7 @@ export default function Transact() {
       console.error(error);
       alert("Transaction failed!");
     }
-
   };
-
-  const buttonStyle = {
-    backgroundColor: 'yellow',
-    border: 'none',
-    color: 'black',
-    padding: '15px 32px',
-    textDecoration: 'none',
-    display: 'inline-block',
-    fontSize: '16px',
-    margin: '4px 2px',
-    cursor: 'pointer',
-    borderRadius: '5px', // This will make the button round
-  };
-  
-
-
-
-
-
-
 
   if (!activeAddress) {
     return <p>Connect an account first.</p>;
@@ -88,31 +68,69 @@ export default function Transact() {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-      <input
-        type="email"
-        value={email}
-        onChange={e => {
-          setEmail(e.target.value);
-          setValid(/\S+@\S+\.\S+/g.test(e.target.value));
-        }}
-        placeholder="Enter your email"
-        style={{
-          color: 'black',
-          padding: '10px',
-          marginBottom: '10px',
-          borderRadius: '5px',
-        }}
-      />
-      <button
-        onClick={() => sendTransaction(activeAddress, email)}
-        style={{
-          ...buttonStyle,
-          backgroundColor: valid ? 'yellow' : 'grey',
-        }}
-        disabled={!valid}
-      >
-        Pay for the license (20 USD)
-      </button>
+      <EmailInput email={email} setEmail={setEmail} setValid={setValid} />
+      <PaymentButton activeAddress={activeAddress} email={email} sendTransaction={sendTransaction} valid={valid} />
     </div>
   );
+}
+
+
+const EmailInput = ({ email, setEmail, setValid }: EmailProps) => (
+  <input
+    type="email"
+    value={email}
+    onChange={e => {
+      setEmail(e.target.value);
+      setValid(/\S+@\S+\.\S+/g.test(e.target.value));
+    }}
+    placeholder="Enter your email"
+    style={emailInputStyle}
+  />
+);
+
+const PaymentButton = ({ activeAddress, email, sendTransaction, valid }: PaymentButtonProps) => (
+  <button
+    onClick={() => sendTransaction(activeAddress, email)}
+    style={{
+      ...buttonStyle,
+      backgroundColor: valid ? 'yellow' : 'grey',
+    }}
+    disabled={!valid}
+  >
+    Pay for the license (20 USD)
+  </button>
+);
+
+const buttonStyle = {
+  backgroundColor: 'yellow',
+  border: 'none',
+  color: 'black',
+  padding: '15px 32px',
+  textDecoration: 'none',
+  display: 'inline-block',
+  fontSize: '16px',
+  margin: '4px 2px',
+  cursor: 'pointer',
+  borderRadius: '5px',
+};
+
+const emailInputStyle = {
+  color: 'black',
+  padding: '10px',
+  marginBottom: '10px',
+  borderRadius: '5px',
+};
+
+
+interface EmailProps {
+  email: string;
+  setEmail: (email: string) => void;
+  setValid: (valid: boolean) => void;
+}
+
+interface PaymentButtonProps {
+  activeAddress: string;
+  email: string;
+  sendTransaction: (from: string, email: string) => void;
+  valid: boolean;
 }

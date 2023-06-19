@@ -5,7 +5,6 @@ import {
     initializeProviders,
     WalletProvider,
 } from "@txnlab/use-wallet";
-import Account from "./components/Account";
 import Connect from "./components/Connect";
 import Transact from "./components/Transact";
 
