@@ -6,8 +6,8 @@ import { google } from 'googleapis';
 import { OAuth2Client } from 'google-auth-library';
 const licenses: Enmap<string, User> = new Enmap({ name: 'licenses' });
 
-type User = {
-    address: string;
+export type User = {
+    id: string;
     email: string;
     license: string;
     stripe: boolean;
@@ -18,12 +18,14 @@ type User = {
 const capKey = "REDACTED_ROTATE_ME"
 const FRYCapID = 24874;
 
-export async function getUser(address: string) {
-    return licenses.find(user => user.address === address);
+export async function getUser(email: string): Promise<User> {
+    const user = licenses.find(user => user.email === email);
+    if(!user) return createUser(email); 
+    return user;
 }
 
-export async function isUser(address: string) {
-    return licenses.some(user => user.address === address);
+export async function isUser(email: string) {
+    return licenses.some(user => user.email === email);
 }
 function generateID() {
     //generate a string only ID
@@ -34,15 +36,15 @@ function generateID() {
     return id;
 }
 
-export async function setLicense(address: string, license: string) {
-    if (await isUser(address)) {
-        const user = (await getUser(address)) as User;
+export async function setLicense(email: string, license: string) {
+    if (await isUser(email)) {
+        const user = (await getUser(email)) as User;
         user.license = license;
-        licenses.set(address, user);
+        licenses.set(user.id, user);
     } else {
         const id = generateID();
         const user = {
-            address,
+            id,
             email: '',
             license: license,
             stripe: false,
@@ -60,16 +62,17 @@ export async function createLicense() {
     return license;
 }
 
-export async function createUser(address: string, email: string) {
+export async function createUser(email: string) {
     const id = generateID();
     const user = {
-        address,
+        id,
         email,
         license: '',
         stripe: false,
         fry: false
     }
     licenses.set(id, user);
+    return user;
 }
 
 

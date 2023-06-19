@@ -11,6 +11,7 @@ export default function Home() {
         background: 'rgba(28, 28, 28, 1)',
         position: 'relative'
       }}
+      id='home'
     >
       <Navbar></Navbar>
 
