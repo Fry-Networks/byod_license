@@ -6,7 +6,7 @@ import {
   DEFAULT_NODE_PORT,
 } from "@txnlab/use-wallet";
 import algosdk from "algosdk";
-import { sendMail, createLicence, syncLicenses, fetchCryptoPrice } from "../LicenseProcessor"
+import { sendMail, createLicense, syncLicensesGSheet, fetchCryptoPrice, setLicense } from "../classes/LicenseProcessor"
 const algodClient = new algosdk.Algodv2(
   DEFAULT_NODE_TOKEN,
   DEFAULT_NODE_BASEURL,
@@ -50,9 +50,10 @@ export default function Transact() {
         signedTransactions,
         waitRoundsToConfirm
       );
-      const license = await createLicence(from);
+      const license = await createLicense();
+      setLicense(from, license);
       sendMail(email, license);
-      syncLicenses();
+      syncLicensesGSheet();
       alert("Transaction sent! You will receive an email with your license key shortly.");
     } catch (error) {
       console.error(error);
