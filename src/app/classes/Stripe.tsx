@@ -1,41 +1,40 @@
+'use server'
 import { Stripe } from 'stripe';
+import { createUser, getUser, setUser } from './LicenseProcessor';
 require('dotenv').config();
+console.log(process.env.STRIPE_SECRET_KEY);
+const client = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+    apiVersion: '2022-11-15',
+});
 
-export class StripeService {
-  private stripe: Stripe;
-
-  constructor() {
-    console.log('hey')
-    console.log(process.env.STRIPE_SECRET_KEY);
-    this.stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-      apiVersion: '2022-11-15',
-    });
-  }
-
-  async createPaymentIntent(amount: number, currency: string = 'usd') {
+export async function handleToken(email: string) {
     try {
-      const paymentIntent = await this.stripe.paymentIntents.create({
-        amount, // this is in the smallest currency unit (e.g., cents for usd)
-        currency,
-      });
+        const paymentIntent = await client.paymentIntents.create({
+            amount: 5250,
+            currency: 'usd',
+            payment_method_types: ['card'],
+            description: 'Payment for FRY',
+            metadata: {productId: 'prod_O7M3lpEZaAUdE8', email: email},
+        });
 
-      // return only what's needed for the frontend
-      return {
-        clientSecret: paymentIntent.client_secret,
-      };
+        console.log(paymentIntent);
+        if (paymentIntent.status === 'requires_payment_method') {
+            console.log('Payment intent created');
+            return paymentIntent.client_secret;
+        } else {
+            console.log('Payment failed');
+        }
     } catch (error) {
-      throw error;
+        console.log('Error creating payment intent:', error);
     }
-  }
-
-  async confirmPayment(paymentIntentId: string) {
-    try {
-      const paymentIntent = await this.stripe.paymentIntents.confirm(paymentIntentId);
-      return paymentIntent;
-    } catch (error) {
-      throw error;
-    }
-  }
-
-  // Add other methods needed to handle payments
 }
+
+export async function createPaymentIntent(email: string) {
+    const clientSecret = await handleToken(email);
+    return clientSecret;
+}
+
+
+
+
+

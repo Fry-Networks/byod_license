@@ -34,3 +34,20 @@ button {
 }
 
 
+.card-enter {
+  opacity: 0;
+}
+
+.card-enter-active {
+  opacity: 1;
+  transition: opacity 300ms;
+}
+
+.card-exit {
+  opacity: 1;
+}
+
+.card-exit-active {
+  opacity: 0;
+  transition: opacity 300ms;
+}

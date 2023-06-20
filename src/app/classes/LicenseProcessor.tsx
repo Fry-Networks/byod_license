@@ -14,14 +14,36 @@ export type User = {
     fry: boolean;
 }
 
+export type UserData = {
+    stripe: boolean;
+    fry: boolean;
+}
+
 
 const capKey = "REDACTED_ROTATE_ME"
 const FRYCapID = 24874;
 
-export async function getUser(email: string): Promise<User> {
+export async function getUser(email: string): Promise<User | null> {
+    console.log(licenses)
     const user = licenses.find(user => user.email === email);
-    if(!user) return createUser(email); 
-    return user;
+    return user || null;
+}
+export async function setUser(user: User) {
+    licenses.set(user.id, user);
+}
+
+export async function getUserData(email: string): Promise<UserData> {
+    const user = await getUser(email);
+    if (!user) {
+        return {
+            stripe: false,
+            fry: false
+        }
+    }
+    return {
+        stripe: user.stripe,
+        fry: user.fry
+    }
 }
 
 export async function isUser(email: string) {

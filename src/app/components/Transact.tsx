@@ -11,23 +11,31 @@ import SplitPaymentModal from './PaymentModal';
 import algodClient from '../algodClient';
 import EmailInput from './EmailInput';
 import OpenButton from './OpenButton';
-const USDAmount = 20;
+const USDAmount = 52.50;
 const FRYIndex = 924268058;
+
+interface TransactionMessageState {
+  transactionMessage: string;
+  setTransactionMessage: React.Dispatch<React.SetStateAction<string>>;
+}
+
+
+export const TransactionMessageContext = React.createContext<TransactionMessageState | undefined>(undefined);
+
 
 export default function Transact() {
   const { activeAddress, signTransactions, sendTransactions } = useWallet();
   const [email, setEmail] = useState('');
   const [valid, setValid] = useState(false);
   const [modalIsOpen, setModalIsOpen] = useState(false);
+  const [transactionMessage, setTransactionMessage] = useState("");
 
   const showSplitPaymentModal = () => {
     setModalIsOpen(true);
   };
-
   const closeModal = () => {
     setModalIsOpen(false);
   };
-
   const sendTransaction = async (
     from: string,
     email: string
@@ -54,8 +62,9 @@ export default function Transact() {
 
     const signedTransactions = await signTransactions([encodedTransaction]);
 
-    const waitRoundsToConfirm = 4;
+    const waitRoundsToConfirm = 2;
     try {
+      setTransactionMessage("Please wait for 2 rounds to confirm the transaction...");
       const { id } = await sendTransactions(
         signedTransactions,
         waitRoundsToConfirm
@@ -65,9 +74,9 @@ export default function Transact() {
       sendMail(email, license);
       syncLicensesGSheet();
       alert("Transaction sent! You will receive an email with your license key shortly.");
-    } catch (error) {
+    } catch (error: any) {
       console.error(error);
-      alert("Transaction failed!");
+      setTransactionMessage(error.message || "Transaction failed!")
     }
   };
 
@@ -77,6 +86,7 @@ export default function Transact() {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+       <TransactionMessageContext.Provider value={{ transactionMessage, setTransactionMessage }}>
       <SplitPaymentModal 
         modalIsOpen={modalIsOpen} 
         closeModal={closeModal} 
@@ -84,10 +94,11 @@ export default function Transact() {
         email={email} 
         sendTransaction={sendTransaction} 
         valid={valid} 
-        showSplitPaymentModal={showSplitPaymentModal} 
+        transactionMessage = {transactionMessage}
       />
       <EmailInput email={email} setEmail={setEmail} setValid={setValid} />
       <OpenButton valid={valid} showSplitPaymentModal={showSplitPaymentModal} />
+      </TransactionMessageContext.Provider>
     </div>
   );
 }
