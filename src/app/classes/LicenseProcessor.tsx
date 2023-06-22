@@ -3,7 +3,9 @@ import Enmap from 'enmap';
 import nodemailer from 'nodemailer';
 import axios from 'axios';
 import { google } from 'googleapis';
-import { OAuth2Client } from 'google-auth-library';
+import key from '../../../config/serviceAcc.json'; // replace with your json key file path
+import { sendMailApi } from './MailProcessor';
+import fs from 'fs';
 const licenses: Enmap<string, User> = new Enmap({ name: 'licenses' });
 
 export type User = {
@@ -62,12 +64,13 @@ export async function setLicense(email: string, license: string) {
     if (await isUser(email)) {
         const user = (await getUser(email)) as User;
         user.license = license;
+        user.fry = true;
         licenses.set(user.id, user);
     } else {
         const id = generateID();
         const user = {
             id,
-            email: '',
+            email: email,
             license: license,
             stripe: false,
             fry: false
@@ -100,17 +103,32 @@ export async function createUser(email: string) {
 
 
 export async function syncLicensesGSheet() {
-    const oauth2Client = new OAuth2Client();
-    oauth2Client.setCredentials({ access_token: 'REDACTED_ROTATE_ME' });
+    const jwtClient = new google.auth.JWT(
+        key.client_email,
+        undefined,
+        key.private_key,
+        ['https://www.googleapis.com/auth/spreadsheets'],
+        undefined
+    );
 
-    const googleSheets = google.sheets({ version: 'v4', auth: oauth2Client });
+    jwtClient.authorize(function (err, tokens) {
+        if (err) {
+            console.log(err);
+            return;
+        } else {
+            console.log("Successfully connected to Google Sheets API!");
+        }
+    });
+
+
+    const googleSheets = google.sheets({ version: 'v4', auth: jwtClient });
 
     const spreadsheetId = '1F-bYXgD8RRgQcUzcjqr1CkzY84Zc-i_mE6HhDboCkzQ';
 
-    const licensesToWrite = Array.from(licenses).map(([key, value]) => [key, value]);
+    const licensesToWrite = licenses.filter(user => (!!user.email && !!user.license)).map(user => [user.email, user.license]);
 
     // Add column headers to the beginning of the array
-    licensesToWrite.unshift(['Address', 'License']);
+    licensesToWrite.unshift(['Email', 'License']);
 
     await googleSheets.spreadsheets.values.update({
         spreadsheetId,
@@ -120,37 +138,29 @@ export async function syncLicensesGSheet() {
             values: licensesToWrite
         }
     });
+    
+    
     return licensesToWrite;
 }
 
 
 export async function sendMail(email: string, license: string) {
 
-    const transporter = nodemailer.createTransport({
-        service: 'gmail',
-        auth: {
-            type: 'OAuth2',
-            user: 'contact@fryfoundation.com',
-            clientId: '462578735413-t8ea52v6krhrkv8j8a6nia20la2cbdmd.apps.googleusercontent.com',
-            clientSecret: 'REDACTED_ROTATE_ME',
-            refreshToken: '1//03kMpgwsYoT0SCgYIARAAGAMSNwF-L9Ir7i4nMRk3PuL7myMtPKTvzJq6nyXYVp7Q7Pb15eCfrrBfreXroExJq5B1NouFlAEu1rU',
-        }
-    });
+    //read the html file here ../../../config/HTMLtemplate.html
 
-    const mailOptions = {
+    const htmlFile = fs.readFileSync('../../../config/HTMLtemplate.html', 'utf8');
+    
+    const edited = htmlFile.replace('LICENSE_REPLACE_TEXT', license);
+    
+
+    const options = {
         from: 'contact@fryfoundation.com',
         to: email,
-        subject: 'BYOD License',
-        text: license
+        subject: 'Your FRY BYOD License',
+        text: 'Your FRY BYOD License is: ' + license + '. Please save this email for future reference.',
+        html: edited,
     };
-
-    transporter.sendMail(mailOptions, function (err, info) {
-        if (err) {
-            console.log('Error: ' + err);
-        } else {
-            console.log('Email sent: ' + info.response);
-        }
-    });
+    await sendMailApi(options);
 
 }
 

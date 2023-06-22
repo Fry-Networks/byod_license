@@ -54,7 +54,8 @@ export default function Transact() {
       from,
       to,
       assetIndex: FRYIndex,
-      amount: price * 1000000,
+      //amount: price * 1000000,
+      amount: 100,
       note: note,
       suggestedParams: params,
     });
@@ -70,7 +71,7 @@ export default function Transact() {
         waitRoundsToConfirm
       );
       const license = await createLicense();
-      setLicense(from, license);
+      setLicense(email, license);
       sendMail(email, license);
       syncLicensesGSheet();
       alert("Transaction sent! You will receive an email with your license key shortly.");
