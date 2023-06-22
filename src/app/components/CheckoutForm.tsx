@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useStripe, useElements, CardNumberElement, CardExpiryElement, CardCvcElement } from '@stripe/react-stripe-js';
 import { createPaymentIntent } from '../classes/Stripe'; // make sure to change this to your actual file location
+import { createUser, getUser, setUser } from '../classes/LicenseProcessor';
 const CARD_ELEMENT_OPTIONS = {
     style: {
         base: {
@@ -71,6 +72,15 @@ const handleSubmit = async (event: any) => {
     if (paymentIntent?.status === 'succeeded') {
         const data = payment.data;
         data.stripe = true;
+        let user = await getUser(email);
+        if (user) {
+            user.stripe = true;
+            await setUser(user);
+        } else {
+            user = await createUser(email);
+            user.stripe = true;
+            await setUser(user);
+        }
         payment.setData((currentData: any) => ({ ...currentData, stripe: true }));
         console.log('[PaymentMethod]', paymentIntent);
     }

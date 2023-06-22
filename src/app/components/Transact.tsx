@@ -1,11 +1,11 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import {
   useWallet
 } from "@txnlab/use-wallet";
 import algosdk from "algosdk";
 import {
   sendMail, createLicense, syncLicensesGSheet,
-  fetchCryptoPrice, setLicense, getUser, User
+  fetchCryptoPrice, setLicense, getUser, User, createUser, isUser, UserData
 } from '../classes/LicenseProcessor';
 import SplitPaymentModal from './PaymentModal';
 import algodClient from '../algodClient';
@@ -15,9 +15,23 @@ const USDAmount = 52.50;
 const FRYIndex = 924268058;
 
 interface TransactionMessageState {
-  transactionMessage: string;
-  setTransactionMessage: React.Dispatch<React.SetStateAction<string>>;
+  transactionMessage: {
+    message: string;
+    color: string;
+  };
+  setTransactionMessage: React.Dispatch<React.SetStateAction<{
+    message: string;
+    color: string;
+  }>>;
 }
+
+interface PaymentSuccessfulState {
+  paymentSuccessful: UserData;
+  setPaymentSuccessful: React.Dispatch<React.SetStateAction<UserData>>;
+}
+
+export const PaymentSuccessfulContext = React.createContext<PaymentSuccessfulState | undefined>(undefined);
+
 
 
 export const TransactionMessageContext = React.createContext<TransactionMessageState | undefined>(undefined);
@@ -28,10 +42,16 @@ export default function Transact() {
   const [email, setEmail] = useState('');
   const [valid, setValid] = useState(false);
   const [modalIsOpen, setModalIsOpen] = useState(false);
-  const [transactionMessage, setTransactionMessage] = useState("");
+  const [transactionMessage, setTransactionMessage] = useState({
+    message: "",
+    color: "#000"
+  });
+
+  const [paymentSuccessful, setPaymentSuccessful] = useState({} as UserData);
 
   const showSplitPaymentModal = () => {
     setModalIsOpen(true);
+    if (!isUser(email)) createUser(email);
   };
   const closeModal = () => {
     setModalIsOpen(false);
@@ -65,19 +85,37 @@ export default function Transact() {
 
     const waitRoundsToConfirm = 2;
     try {
-      setTransactionMessage("Please wait for 2 rounds to confirm the transaction...");
+      setTransactionMessage({
+        message: "Please wait for 2 rounds to confirm the transaction..."
+        , color: "#000"
+      });
       const { id } = await sendTransactions(
         signedTransactions,
         waitRoundsToConfirm
       );
-      const license = await createLicense();
-      setLicense(email, license);
-      sendMail(email, license);
-      syncLicensesGSheet();
-      alert("Transaction sent! You will receive an email with your license key shortly.");
+      const license = await createLicense(email);
+      if (license) {
+        const data = paymentSuccessful;
+        paymentSuccessful.fry = true;
+        setPaymentSuccessful(data);
+        setTransactionMessage({
+          message: "Transaction sent! You will receive an email with your license key shortly.",
+          color: "#72AE55"
+        })
+      } else {
+        setTransactionMessage({
+          message: "Transaction failed!",
+          color: "#e5424d"
+        })
+        console.error("Transaction failed!");
+      }
+
     } catch (error: any) {
       console.error(error);
-      setTransactionMessage(error.message || "Transaction failed!")
+      setTransactionMessage({
+        message: error.message || "Transaction failed!",
+        color: "#e5424d"
+      })
     }
   };
 
@@ -87,19 +125,21 @@ export default function Transact() {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-       <TransactionMessageContext.Provider value={{ transactionMessage, setTransactionMessage }}>
-      <SplitPaymentModal 
-        modalIsOpen={modalIsOpen} 
-        closeModal={closeModal} 
-        activeAddress={activeAddress} 
-        email={email} 
-        sendTransaction={sendTransaction} 
-        valid={valid} 
-        transactionMessage = {transactionMessage}
-      />
-      <EmailInput email={email} setEmail={setEmail} setValid={setValid} />
-      <OpenButton valid={valid} showSplitPaymentModal={showSplitPaymentModal} />
-      </TransactionMessageContext.Provider>
+      <PaymentSuccessfulContext.Provider value={{ paymentSuccessful, setPaymentSuccessful }}>
+        <TransactionMessageContext.Provider value={{ transactionMessage, setTransactionMessage }}>
+          <SplitPaymentModal
+            modalIsOpen={modalIsOpen}
+            closeModal={closeModal}
+            activeAddress={activeAddress}
+            email={email}
+            sendTransaction={sendTransaction}
+            valid={valid}
+            transactionMessage={transactionMessage}
+          />
+          <EmailInput email={email} setEmail={setEmail} setValid={setValid} />
+          <OpenButton valid={valid} showSplitPaymentModal={showSplitPaymentModal} />
+        </TransactionMessageContext.Provider>
+      </PaymentSuccessfulContext.Provider>
     </div>
   );
 }

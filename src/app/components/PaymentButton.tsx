@@ -1,7 +1,8 @@
 import React, { useContext, useState } from 'react';
 import { TransactionMessageContext } from './Transact';
-const PaymentButton = ({ valid,  sendTransaction, from, email }: { valid: boolean,  sendTransaction: (from: string, email: string) => Promise<void>, from: string, email: string }) => {
+const PaymentButton = ({ valid,  sendTransaction, from, email, isPaid }: { valid: boolean,  sendTransaction: (from: string, email: string) => Promise<void>, from: string, email: string, isPaid: boolean }) => {
   // Introduce a loading state
+  console.log(isPaid)
   const [isLoading, setIsLoading] = useState(false);
   const context = useContext(TransactionMessageContext);
 
@@ -13,6 +14,7 @@ const PaymentButton = ({ valid,  sendTransaction, from, email }: { valid: boolea
   // Update the sendTransaction function to handle the loading state
   const handleTransaction = async (from: string, email: string) => {
     setIsLoading(true);
+    
     try {
     await sendTransaction(from, email);
     } catch (error: any) {
@@ -22,20 +24,24 @@ const PaymentButton = ({ valid,  sendTransaction, from, email }: { valid: boolea
     }
     setIsLoading(false);
   }
-
-  return (
+  const condition = (!valid || isLoading)
+  if(!isPaid) return (
     <button
       onClick={() => handleTransaction(from, email)}
       style={{
         ...buttonStyle,
         backgroundColor: valid && !isLoading ? 'yellow' : 'grey',
         cursor: valid && !isLoading ? 'pointer' : 'default',
+        display: (isPaid) ? 'none' : 'inline-block'
       }}
-      disabled={!valid || isLoading}
+      disabled={condition}
+      hidden={isPaid}
+      
     >
       {isLoading ? 'Processing...' : 'Pay for the license (52,50$ USD)'}
     </button>
   );
+  else return null;
 };
 
 const buttonStyle = {

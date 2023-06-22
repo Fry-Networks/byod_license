@@ -1,8 +1,13 @@
+'use client';
 import Footer from './footer';
 import Payment from './payment';
 import Navbar from './components/Navbar'
-
+import { useEffect } from 'react';
+import Modal from 'react-modal';
 export default function Home() {
+  useEffect(() => {
+    Modal.setAppElement('#home');
+  }, []);
   return (
     <main
       style={{

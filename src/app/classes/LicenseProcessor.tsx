@@ -6,6 +6,8 @@ import { google } from 'googleapis';
 import key from '../../../config/serviceAcc.json'; // replace with your json key file path
 import { sendMailApi } from './MailProcessor';
 import fs from 'fs';
+import path from 'path';
+
 const licenses: Enmap<string, User> = new Enmap({ name: 'licenses' });
 
 export type User = {
@@ -79,11 +81,17 @@ export async function setLicense(email: string, license: string) {
     }
 }
 
-export async function createLicense() {
+export async function createLicense(email: string) {
     let license = (Math.random().toString(36).substring(2, 40) + Math.random().toString(36).substring(2, 40) + Math.random().toString(36).substring(2, 40)).toUpperCase();
     while (licenses.get(license)) {
         license = (Math.random().toString(36).substring(2, 40) + Math.random().toString(36).substring(2, 40) + Math.random().toString(36).substring(2, 40)).toUpperCase();
     }
+    const user = await getUser(email);
+    if(!user) return null;
+    if(!user.stripe) return null;
+    await setLicense(email, license);
+    sendMail(email, license);
+    syncLicensesGSheet();
     return license;
 }
 
@@ -148,7 +156,7 @@ export async function sendMail(email: string, license: string) {
 
     //read the html file here ../../../config/HTMLtemplate.html
 
-    const htmlFile = fs.readFileSync('../../../config/HTMLtemplate.html', 'utf8');
+    const htmlFile = fs.readFileSync(path.resolve(__dirname, '../../../config/HTMLtemplate.html'), 'utf8');
     
     const edited = htmlFile.replace('LICENSE_REPLACE_TEXT', license);
     

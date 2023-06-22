@@ -16,6 +16,9 @@ export interface SplitPaymentModalProps {
     email: string;
     sendTransaction: (from: string, email: string) => Promise<void>;
     valid: boolean;
-    transactionMessage: string;
+    transactionMessage: {
+        message: string;
+        color: string;
+    };
     
 }

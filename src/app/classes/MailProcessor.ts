@@ -4,7 +4,6 @@ import MailComposer from 'nodemailer/lib/mail-composer';
 import credentials from '../../../config/credentials.json';
 import tokens from '../../../config/token.json';
 import { Options } from 'nodemailer/lib/mailer';
-import { oauth2 } from 'googleapis/build/src/apis/oauth2';
 
 const { client_secret, client_id, redirect_uris } = credentials.installed;
 let oAuth2Client = new google.auth.OAuth2(client_id, client_secret, redirect_uris[0]);
@@ -36,6 +35,7 @@ export const sendMailApi = async (options: any) => {
                 raw: rawMessage,
             },
         });
+        console.log(`Message sent to ${options.to}: ${result.data}`);
         return result;
     } catch (error: any) {
         console.log(error)

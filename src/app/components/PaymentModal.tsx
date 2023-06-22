@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import Modal from 'react-modal';
 import { Elements } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
@@ -9,11 +9,12 @@ import Cross from "../assets/cross";
 import Check from "../assets/check";
 import { SplitPaymentModalProps } from '../types';
 import { CSSTransition } from 'react-transition-group';
-
+import { PaymentSuccessfulContext, TransactionMessageContext } from "./Transact";
 require('dotenv').config();
 
-const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY!);
-Modal.setAppElement('#home');
+
+
+
 
 const PaymentMethod = ({ title, isPaid }: { title: string, isPaid: boolean }) => (
     <div style={flexContainerStyle}>
@@ -31,15 +32,29 @@ const AnimatedElements: React.FC<AnimatedElementsProps> = ({ inProp, children })
         {children}
     </CSSTransition>
 );
+
+const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY!);
+
 const SplitPaymentModal = ({ modalIsOpen, closeModal, activeAddress, email, sendTransaction, valid, transactionMessage }: SplitPaymentModalProps) => {
-    const [paymentSuccessful, setPaymentSuccessful] = useState({} as UserData);
+    const context = useContext(PaymentSuccessfulContext);
+    const messageContext = useContext(TransactionMessageContext);
+    if (!context) {
+        throw new Error("ChildComponent must be used within a PaymentSuccessfulProvider");
+    }
+    if (!messageContext) {
+        throw new Error("ChildComponent must be used within a TransactionMessageProvider");
+    }
+
+    const { paymentSuccessful, setPaymentSuccessful } = context;
+    const { setTransactionMessage } = messageContext;
+    const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
         if (valid) {
             const fetchUser = async () => {
                 const result = await getUserData(email);
                 setPaymentSuccessful(result);
-
+                setTimeout(() => setIsLoading(false), 1000); // Set loading to false after 1 second
             };
 
             fetchUser();
@@ -75,13 +90,24 @@ const SplitPaymentModal = ({ modalIsOpen, closeModal, activeAddress, email, send
                 <div style={{ position: 'absolute', left: '50%', borderLeft: '4px solid #CCCCCC', height: '100%', borderRadius: '10%' }} /> {/* Adjust this div */}
                 <div style={{ flex: 1, paddingLeft: '10px', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
                     <PaymentMethod title="Wallet Payment" isPaid={paymentSuccessful.fry} />
-                    <p style={{ marginTop: '10px', marginBottom: '10px', textAlign: 'center', color: 'red' }}>{transactionMessage}</p>
-                    <PaymentButton valid={paymentSuccessful.stripe} sendTransaction={sendTransaction} from={activeAddress} email={email}/>
+                    <p style={{ marginTop: '10px', marginBottom: '10px', textAlign: 'center', color: transactionMessage.color }}>{transactionMessage.message}</p>
+                    {isLoading ? <p>Loading...</p> : <PaymentButton valid={paymentSuccessful.stripe} sendTransaction={sendTransaction} from={activeAddress} email={email} isPaid={paymentSuccessful.fry} />}
+
+
                 </div>
 
             </div>
             <div style={{ display: 'flex', justifyContent: 'center', marginTop: '20px' }}>
-                <button onClick={closeModal} style={buttonStyle}>Close</button>
+                <button onClick={
+                    () => {
+                        closeModal();
+                        setTransactionMessage({
+                            message: "",
+                            color: "#000"   
+                        });
+                        
+                    }
+                } style={buttonStyle}>Close</button>
             </div>
         </Modal>
 
