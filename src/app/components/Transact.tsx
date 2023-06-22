@@ -74,8 +74,7 @@ export default function Transact() {
       from,
       to,
       assetIndex: FRYIndex,
-      //amount: price * 1000000,
-      amount: 100,
+      amount: price * 1000000,
       note: note,
       suggestedParams: params,
     });
@@ -93,6 +92,13 @@ export default function Transact() {
         signedTransactions,
         waitRoundsToConfirm
       );
+      if(!id) {
+        setTransactionMessage({
+          message: "Transaction failed!",
+          color: "#e5424d"
+        })
+        return;
+      }
       const license = await createLicense(email);
       if (license) {
         const data = paymentSuccessful;

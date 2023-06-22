@@ -32,10 +32,10 @@ const PaymentButton = ({ valid,  sendTransaction, from, email, isPaid }: { valid
         ...buttonStyle,
         backgroundColor: valid && !isLoading ? 'yellow' : 'grey',
         cursor: valid && !isLoading ? 'pointer' : 'default',
-        display: (isPaid) ? 'none' : 'inline-block'
+        display: (isPaid || !valid) ? 'none' : 'inline-block'
       }}
       disabled={condition}
-      hidden={isPaid}
+      hidden={isPaid || !valid}
       
     >
       {isLoading ? 'Processing...' : 'Pay for the license (52,50$ USD)'}

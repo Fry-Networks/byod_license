@@ -69,11 +69,25 @@ export default function Connect() {
   const anyConnected = providers?.some(provider => provider.isConnected);
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'center', alignItems: 'center', textAlign: 'center' }}>
+    <div style={{
+      display: 'flex',
+      flexDirection: 'row',
+      flexWrap: 'wrap', // Allow items to wrap as necessary
+      justifyContent: 'center',
+      alignItems: 'center',
+      textAlign: 'center'
+    }}>
       {providers?.map((provider) => (
         (provider.isConnected || !anyConnected) && (
-          <div key={"provider-" + provider.metadata.id} style={{ margin: '0 20px', display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative' }}>
-
+          <div key={"provider-" + provider.metadata.id} style={{
+            margin: '0 20px',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            position: 'relative',
+            flexBasis: 'auto', // Each item will shrink or grow as necessary
+            marginBottom: '20px' // Add a margin to prevent items from sticking together when they wrap
+          }}>
 
 
             <h4 style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
