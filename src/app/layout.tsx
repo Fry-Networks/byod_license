@@ -14,10 +14,13 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
+       
+
         <link href='https://fonts.googleapis.com/css?family=Montserrat' rel='stylesheet'></link>
       </head>
 
       <body className={inter.className}>{children}</body>
     </html>
+
   )
 }
