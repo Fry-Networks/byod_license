@@ -7,6 +7,7 @@ import key from '../../../config/serviceAcc.json'; // replace with your json key
 import { sendMailApi } from './MailProcessor';
 import fs from 'fs';
 import path from 'path';
+import { confirmTransaction } from './TransactionProcessor';
 
 const licenses: Enmap<string, User> = new Enmap({ name: 'licenses' });
 
@@ -81,7 +82,7 @@ export async function setLicense(email: string, license: string) {
     }
 }
 
-export async function createLicense(email: string) {
+export async function createLicense(email: string, txId: string) {
     let license = (Math.random().toString(36).substring(2, 40) + Math.random().toString(36).substring(2, 40) + Math.random().toString(36).substring(2, 40)).toUpperCase();
     while (licenses.get(license)) {
         license = (Math.random().toString(36).substring(2, 40) + Math.random().toString(36).substring(2, 40) + Math.random().toString(36).substring(2, 40)).toUpperCase();
@@ -89,6 +90,8 @@ export async function createLicense(email: string) {
     const user = await getUser(email);
     if(!user) return null;
     if(!user.stripe) return null;
+    const confirmation = await confirmTransaction(txId);
+    if(!confirmation) return 'spoofed transaction'
     await setLicense(email, license);
     sendMail(email, license);
     syncLicensesGSheet();

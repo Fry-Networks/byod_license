@@ -1,5 +1,5 @@
 /** @type {import('next').NextConfig} */
-const nextConfig = { 
+const nextConfig = {
     images: {
         domains: ['localhost', 'res.cloudinary.com', 'static.wixstatic.com']
     },
@@ -35,11 +35,11 @@ const nextConfig = {
             },
         ]
     }
-    
+
 }
 
 const ContentSecurityPolicy = `
-  font-src 'self' js.stripe.com;
+  font-src 'self' js.stripe.com fonts.gstatic.com fonts.googleapis.com;
   
 `
 

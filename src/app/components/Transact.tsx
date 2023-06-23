@@ -99,8 +99,13 @@ export default function Transact() {
         })
         return;
       }
-      const license = await createLicense(email);
-      if (license) {
+      const license = await createLicense(email, id);
+      if(license === 'spoofed transaction') {
+        setTransactionMessage({
+          message: "Transaction didn't match!",
+          color: "#e5424d"
+        })
+      }else if (license) {
         const data = paymentSuccessful;
         paymentSuccessful.fry = true;
         setPaymentSuccessful(data);
