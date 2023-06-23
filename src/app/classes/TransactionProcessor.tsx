@@ -1,3 +1,4 @@
+'use server';
 import algodClient from "../algodClient";
 import { fetchCryptoPrice } from "./LicenseProcessor";
 import algosdk from 'algosdk';

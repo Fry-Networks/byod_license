@@ -3,8 +3,8 @@ import { Inter } from 'next/font/google'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata = {
-  title: 'BYOD License',
-  description: 'Pay for your license with an Algorand wallet.',
+  title: 'FRY BYOD License',
+  description: 'Purchase your FRY BYOD License here!',
 }
 export default function RootLayout({
   children,

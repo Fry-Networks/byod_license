@@ -14,7 +14,7 @@ export async function handleToken(email: string) {
             currency: 'usd',
             payment_method_types: ['card'],
             description: 'Payment for FRY',
-            metadata: {productId: 'prod_O7M3lpEZaAUdE8', email: email},
+            metadata: {productId: 'prod_O72WxsaqNDJFTi', email: email},
         });
 
         console.log(paymentIntent);
