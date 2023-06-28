@@ -1,9 +1,8 @@
 'use server'
 import { Stripe } from 'stripe';
-import { createUser, getUser, setUser } from './LicenseProcessor';
 require('dotenv').config();
-console.log(process.env.STRIPE_SECRET_KEY);
-const client = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+const secret_key = process.env.NODE_ENV === 'production' ? process.env.STRIPE_SECRET_KEY : process.env.STRIPE_SECRET_KEY_TEST;
+const client = new Stripe(secret_key!, {
     apiVersion: '2022-11-15',
 });
 

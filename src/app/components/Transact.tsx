@@ -4,14 +4,14 @@ import {
 } from "@txnlab/use-wallet";
 import algosdk from "algosdk";
 import {
-  sendMail, createLicense, syncLicensesGSheet,
-  fetchCryptoPrice, setLicense, getUser, User, createUser, isUser, UserData
+   createLicense,
+  fetchCryptoPrice, createUser, isUser, UserData
 } from '../classes/LicenseProcessor';
 import SplitPaymentModal from './PaymentModal';
 import algodClient from '../algodClient';
 import EmailInput from './EmailInput';
 import OpenButton from './OpenButton';
-const USDAmount = 52.50;
+const USDAmount = process.env.NODE_ENV === 'production' ? 52.50 : 0.01;
 const FRYIndex = 924268058;
 
 interface TransactionMessageState {

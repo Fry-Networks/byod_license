@@ -14,10 +14,13 @@ const licenses: Enmap<string, User> = new Enmap({ name: 'licenses' });
 export type User = {
     id: string;
     email: string;
-    license: string;
     stripe: boolean;
     fry: boolean;
+    license?: string
+    licenses: string[];
+    payments?: number[];
 }
+
 
 export type UserData = {
     stripe: boolean;
@@ -63,20 +66,27 @@ function generateID() {
     return id;
 }
 
-export async function setLicense(email: string, license: string) {
+export async function addLicense(email: string, license: string) {
     if (await isUser(email)) {
         const user = (await getUser(email)) as User;
-        user.license = license;
+        user.licenses ? user.licenses.push(license) : user.licenses = [license];
         user.fry = true;
+        if (!user.payments) {
+            user.payments = [new Date().getTime()];
+        }
+        else {
+            user.payments.push(new Date().getTime());
+        }
         licenses.set(user.id, user);
     } else {
         const id = generateID();
         const user = {
             id,
             email: email,
-            license: license,
+            licenses: [license],
             stripe: false,
-            fry: false
+            fry: false,
+            payments: [new Date().getTime()]
         }
         licenses.set(id, user);
     }
@@ -88,11 +98,11 @@ export async function createLicense(email: string, txId: string) {
         license = (Math.random().toString(36).substring(2, 40) + Math.random().toString(36).substring(2, 40) + Math.random().toString(36).substring(2, 40)).toUpperCase();
     }
     const user = await getUser(email);
-    if(!user) return null;
-    if(!user.stripe) return null;
+    if (!user) return null;
+    if (!user.stripe) return null;
     const confirmation = await confirmTransaction(txId);
-    if(!confirmation) return 'spoofed transaction'
-    await setLicense(email, license);
+    if (!confirmation) return 'spoofed transaction'
+    await addLicense(email, license);
     sendMail(email, license);
     syncLicensesGSheet();
     return license;
@@ -103,7 +113,7 @@ export async function createUser(email: string) {
     const user = {
         id,
         email,
-        license: '',
+        licenses: [],
         stripe: false,
         fry: false
     }
@@ -136,10 +146,15 @@ export async function syncLicensesGSheet() {
 
     const spreadsheetId = '1F-bYXgD8RRgQcUzcjqr1CkzY84Zc-i_mE6HhDboCkzQ';
 
-    const licensesToWrite = licenses.filter(user => (!!user.email && !!user.license)).map(user => [user.email, user.license]);
+    const licensesToWrite = licenses.filter(user => (!!user.email && !!user.licenses.length)).map(user => {
+        const lonelyLicense = user.license
+
+        return [user.email, user.licenses.join('\n') + (lonelyLicense ? '\n' + lonelyLicense : '')];
+    
+    });
 
     // Add column headers to the beginning of the array
-    licensesToWrite.unshift(['Email', 'License']);
+    licensesToWrite.unshift(['Email', 'Licenses']);
 
     await googleSheets.spreadsheets.values.update({
         spreadsheetId,
@@ -149,8 +164,8 @@ export async function syncLicensesGSheet() {
             values: licensesToWrite
         }
     });
-    
-    
+
+
     return licensesToWrite;
 }
 
@@ -160,9 +175,9 @@ export async function sendMail(email: string, license: string) {
     //read the html file here ../../../config/HTMLtemplate.html
 
     const htmlFile = fs.readFileSync(path.resolve(__dirname, '../../../config/HTMLtemplate.html'), 'utf8');
-    
+
     const edited = htmlFile.replace('LICENSE_REPLACE_TEXT', license);
-    
+
 
     const options = {
         from: 'contact@fryfoundation.com',
@@ -191,4 +206,16 @@ export async function fetchCryptoPrice() {
     } catch (error) {
         console.error(error);
     }
+}
+
+export async function repayLicense(email: string) {
+    const user = await getUser(email);
+    if (!user) return false;
+    const condition = user.fry && user.stripe;
+    if (condition) {
+        user.fry = false;
+        user.stripe = false;
+        await setUser(user);
+    }
+    return condition;
 }

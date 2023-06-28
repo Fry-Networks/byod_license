@@ -3,7 +3,7 @@ import Modal from 'react-modal';
 import { Elements } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
 import CheckoutForm from "./CheckoutForm";
-import { getUserData, UserData } from '../classes/LicenseProcessor';
+import { repayLicense, getUserData, UserData } from '../classes/LicenseProcessor';
 import PaymentButton from './PaymentButton';
 import Cross from "../assets/cross";
 import Check from "../assets/check";
@@ -32,8 +32,8 @@ const AnimatedElements: React.FC<AnimatedElementsProps> = ({ inProp, children })
         {children}
     </CSSTransition>
 );
-
-const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY!);
+const public_key = process.env.NODE_ENV === 'production' ? process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY : process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY_TEST;
+const stripePromise = loadStripe(public_key!);
 
 const SplitPaymentModal = ({ modalIsOpen, closeModal, activeAddress, email, sendTransaction, valid, transactionMessage }: SplitPaymentModalProps) => {
     const context = useContext(PaymentSuccessfulContext);
@@ -98,16 +98,49 @@ const SplitPaymentModal = ({ modalIsOpen, closeModal, activeAddress, email, send
 
             </div>
             <div style={{ display: 'flex', justifyContent: 'center', marginTop: '20px' }}>
+                <button
+                    onClick={
+                        async () => {
+                            const payAgain = await repayLicense(email);
+                            if (payAgain) {
+                               
+                                setPaymentSuccessful({
+                                    stripe: false,
+                                    fry: false
+                                });
+                                setTransactionMessage({
+                                    message: "",
+                                    color: "#000"
+                                });
+                            }
+                            else {
+                                setTransactionMessage({
+                                    message: "You can't pay for another license at the moment...",
+                                    color: "#FF0000"
+                                });
+                            }
+                        }
+                    }
+                    style={buttonStyle}
+
+                >
+                    Buy another license
+                </button>
+
+
                 <button onClick={
                     () => {
                         closeModal();
                         setTransactionMessage({
                             message: "",
-                            color: "#000"   
+                            color: "#000"
                         });
-                        
+
                     }
                 } style={buttonStyle}>Close</button>
+
+
+
             </div>
         </Modal>
 
