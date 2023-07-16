@@ -23,7 +23,10 @@ export default function Payment() {
             }}
         >
             <WalletProvider value={walletProviders} >
-                <div style={{ ...cardStyle }}>
+                <div style={{
+                    ...cardStyle,
+                    width: '100vw'
+                }}>
                     <div style={{ marginTop: '20px', }}>
                         <Transact />
                     </div>
@@ -45,7 +48,7 @@ const containerStyle = {
     justifyContent: 'center',
     alignItems: 'center',
     textAlign: 'center',
-    width: '100vw',
+    width: '90vw',
     color: 'white',
     background: 'rgb(28, 28, 28)',
     padding: '20px',
@@ -58,5 +61,6 @@ const cardStyle = {
     padding: "20px",
     background: '#84808a',
     borderRadius: '10px',
-    boxShadow: '0 0 10px 0 rgba(0, 0, 0, 0.2)'
+    boxShadow: '0 0 10px 0 rgba(0, 0, 0, 0.2)',
+    width: '90vw',
 } as const;

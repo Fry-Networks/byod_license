@@ -101,7 +101,17 @@ export default function Connect() {
 
             {/* Show the account select if the provider is connected */}
             {provider.isConnected && provider.isActive && provider.accounts.length && (
-              <AccountSelect provider={provider} style={elementStyle} activeAccount={activeAccount} />
+                 <AccountSelect
+                 provider={provider}
+                 style={{
+                   ...elementStyle,
+                   maxWidth: '300px', // Or whatever max width you want
+                   overflow: 'hidden',
+                   textOverflow: 'ellipsis',
+                   whiteSpace: 'nowrap'
+                 }}
+                 activeAccount={activeAccount}
+               />
             )}
 
             {/* Show the disconnect button if the provider is connected */}
