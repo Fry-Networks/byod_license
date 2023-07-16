@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start -p 3001",
-    "lint": "next lint"
+    "lint": "next lint",
+    "sync": "git pull && npm run build && pm2 restart byod"
   },
   "dependencies": {
     "@blockshake/defly-connect": "^1.1.2",
