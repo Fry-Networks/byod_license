@@ -99,7 +99,7 @@ export default function Transact() {
         })
         return;
       }
-      const license = await createLicense(email, id);
+      const license = await createLicense(email, activeAddress!,id);
       if(license === 'spoofed transaction') {
         setTransactionMessage({
           message: "Transaction didn't match!",

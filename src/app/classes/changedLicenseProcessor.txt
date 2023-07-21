@@ -1,27 +1,15 @@
 'use server';
-import Enmap from 'enmap';
-import nodemailer from 'nodemailer';
 import axios from 'axios';
+import mongoose from 'mongoose';
 import { google } from 'googleapis';
 import key from '../../../config/serviceAcc.json'; // replace with your json key file path
 import { sendMailApi } from './MailProcessor';
 import fs from 'fs';
 import path from 'path';
 import { confirmTransaction } from './TransactionProcessor';
-import { createMongoUser, updateByod } from '../db/utils';
+import UserModel, {  getUser } from '../db/users-schema';
+import ByodModel, { Byod } from '../db/byod-schema';
 import { connect } from '../db/connect';
-
-const licenses: Enmap<string, User> = new Enmap({ name: 'licenses' });
-
-export type User = {
-    id: string;
-    email: string;
-    stripe: boolean;
-    fry: boolean;
-    license?: string
-    licenses: string[];
-    payments?: number[];
-}
 
 
 export type UserData = {
@@ -29,21 +17,26 @@ export type UserData = {
     fry: boolean;
 }
 
+//check if db is connected
+if (!mongoose.connection.readyState) {
+    connect();
+}
 
 const capKey = "REDACTED_ROTATE_ME"
 const FRYCapID = 24874;
 
-export async function getUser(email: string): Promise<User | null> {
-    console.log(licenses)
-    const user = licenses.find(user => user.email === email);
-    return user || null;
-}
-export async function setUser(user: User) {
-    licenses.set(user.id, user);
+export async function getByod(email: string, address?: string, noCreate?: boolean): Promise<Byod | null> {
+    let user = await getUser(email, address, noCreate);
+    let byod = await ByodModel.findOne({ user_id: user?._id });
+    if (!byod && !noCreate) {
+        byod = await ByodModel.create({ user_id: user?._id });
+    }
+    return byod;
 }
 
-export async function getUserData(email: string): Promise<UserData> {
-    const user = await getUser(email);
+export async function getUserData(email: string, address: string, noCreate?: boolean): Promise<UserData> {
+    const user = await getByod(email, address, noCreate);
+    console.log(user);
     if (!user) {
         return {
             stripe: false,
@@ -51,80 +44,77 @@ export async function getUserData(email: string): Promise<UserData> {
         }
     }
     return {
-        stripe: user.stripe,
-        fry: user.fry
+        stripe: user.current_payment.stripe,
+        fry: user.current_payment.fry
     }
 }
 
 export async function isUser(email: string) {
-    return licenses.some(user => user.email === email);
+    return await UserModel.exists({ email });
 }
-function generateID() {
-    //generate a string only ID
-    let id = (Math.random().toString(36).substring(2, 40) + Math.random().toString(36).substring(2, 40));
-    while (licenses.get(id)) {
-        id = (Math.random().toString(36).substring(2, 40) + Math.random().toString(36).substring(2, 40));
-    }
-    return id;
-}
-
-export async function addLicense(email: string, user_id: string, license: string) {
+export async function addLicense(email: string, license: string) {
     if (await isUser(email)) {
-        const user = (await getUser(email)) as User;
+        const user = (await getByod(email))!;
         user.licenses ? user.licenses.push(license) : user.licenses = [license];
-        user.fry = true;
+        user.current_payment.fry = true;
         if (!user.payments) {
-            user.payments = [new Date().getTime()];
+            user.payments = [new Date()];
         }
         else {
-            user.payments.push(new Date().getTime());
+            user.payments.push(new Date());
         }
-        licenses.set(user.id, user);
-        updateByod(user, user_id)
-
+        ByodModel.updateOne({ user_id: user.user_id }, { licenses: user.licenses, current_payment: user.current_payment, payments: user.payments });
     } else {
-        const id = generateID();
-        const user = {
+        /*const user = {
             id,
             email: email,
             licenses: [license],
             stripe: false,
             fry: false,
             payments: [new Date().getTime()]
-        }
-        licenses.set(id, user);
-        updateByod(user, user_id)
+        }*/
+        const rawUser = (await getUser(email))!;
+        const user = new ByodModel({
+            user_id: rawUser._id,
+            licenses: [license],
+            current_payment: {
+                fry: false,
+                stripe: false
+            },
+            payments: [new Date()]
+        });
+        await user.save();
     }
 }
 
-export async function createLicense(email: string, address: string, txId: string) {
+export async function createLicense(email: string, txId: string) {
     let license = (Math.random().toString(36).substring(2, 40) + Math.random().toString(36).substring(2, 40) + Math.random().toString(36).substring(2, 40)).toUpperCase();
-    while (licenses.get(license)) {
+    while (ByodModel.exists({ "licenses": license })) {
         license = (Math.random().toString(36).substring(2, 40) + Math.random().toString(36).substring(2, 40) + Math.random().toString(36).substring(2, 40)).toUpperCase();
     }
-    const user = await getUser(email);
+    const user = await getByod(email);
     if (!user) return null;
-    if (!user.stripe) return null;
+    if (!user.current_payment.stripe) return null;
     const confirmation = await confirmTransaction(txId);
     if (!confirmation) return 'spoofed transaction'
-    await connect();
-    const mongoUser = await createMongoUser(email, address);
-    await addLicense(email, mongoUser._id, license);
+    await addLicense(email, license);
     sendMail(email, license);
     syncLicensesGSheet();
     return license;
 }
 
 export async function createUser(email: string) {
-    const id = generateID();
-    const user = {
-        id,
-        email,
+    const rawUser = (await getUser(email))!;
+    const user = new ByodModel({
+        user_id: rawUser._id,
         licenses: [],
-        stripe: false,
-        fry: false
-    }
-    licenses.set(id, user);
+        current_payment: {
+            fry: false,
+            stripe: false
+        },
+        payments: []
+    });
+    await user.save();
     return user;
 }
 
@@ -152,13 +142,21 @@ export async function syncLicensesGSheet() {
     const googleSheets = google.sheets({ version: 'v4', auth: jwtClient });
 
     const spreadsheetId = '1F-bYXgD8RRgQcUzcjqr1CkzY84Zc-i_mE6HhDboCkzQ';
-
+    /*
     const licensesToWrite = licenses.filter(user => (!!user.email && !!user.licenses.length)).map(user => {
         const lonelyLicense = user.license
 
         return [user.email, user.licenses.join('\n') + (lonelyLicense ? '\n' + lonelyLicense : '')];
 
+    });*/
+    const licenses = await ByodModel.find({})
+    const users = await UserModel.find({ _id: { $in: licenses.map(license => license.user_id) } });
+    const licensesToWrite = licenses.map(license => {
+        const user = users.find(user => user.id === license.user_id.toString());
+        if (!user) return ["unknown email", license.licenses.join('\n')];
+        return [user.email, license.licenses.join('\n')];
     });
+
 
     // Add column headers to the beginning of the array
     licensesToWrite.unshift(['Email', 'Licenses']);
@@ -216,13 +214,13 @@ export async function fetchCryptoPrice() {
 }
 
 export async function repayLicense(email: string) {
-    const user = await getUser(email);
+    const user = await getByod(email);
     if (!user) return false;
-    const condition = user.fry && user.stripe;
+    const condition = user.current_payment && user.current_payment.stripe;
     if (condition) {
-        user.fry = false;
-        user.stripe = false;
-        await setUser(user);
+        user.current_payment.fry = false;
+        user.current_payment.stripe = false;
+        ByodModel.updateOne({ user_id: user.user_id }, { current_payment: user.current_payment });
     }
     return condition;
 }

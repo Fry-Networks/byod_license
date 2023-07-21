@@ -1,6 +1,7 @@
 'use server'
 import { Stripe } from 'stripe';
-import { createUser, getUser, setUser } from './LicenseProcessor';
+import ByodModel from '../db/byod-schema';
+import { createUser, getByod } from './changedLicenseProcessor';
 require('dotenv').config();
 const secret_key = process.env.NODE_ENV === 'production' ? process.env.STRIPE_SECRET_KEY : process.env.STRIPE_SECRET_KEY_TEST;
 const client = new Stripe(secret_key!, {
@@ -14,7 +15,7 @@ export async function handleToken(email: string) {
             currency: 'usd',
             payment_method_types: ['card'],
             description: 'Payment for FRY',
-            metadata: {productId: 'prod_O72WxsaqNDJFTi', email: email},
+            metadata: { productId: 'prod_O72WxsaqNDJFTi', email: email },
         });
 
         console.log(paymentIntent);
@@ -34,20 +35,23 @@ export async function createPaymentIntent(email: string) {
     return clientSecret;
 }
 
-export async function handlePaymentIntent(email: string, paymentIntent: any): Promise<boolean> {
+export async function handlePaymentIntent(email: string, address: string, paymentIntent: any): Promise<boolean> {
     if (paymentIntent?.status === 'succeeded') {
-        let user = (await getUser(email))!;
+        let user = (await getByod(email, address))!;
         if (user) {
-            user.stripe = true;
-        await setUser(user);
-    } else {
-        user = await createUser(email);
-        user.stripe = true;
-        await setUser(user);
+            user.current_payment.stripe = true;
+            console.log(user.user_id)
+            console.log(user.current_payment)
+            ByodModel.updateOne({ user_id: user.user_id }, { current_payment: user.current_payment }).then((res) => console.log(res)).catch((err) => console.log(err));
+        } else {
+            user = await createUser(email);
+            user.current_payment.stripe = true;
+            ByodModel.updateOne({ user_id: user.user_id }, { current_payment: user.current_payment });
         }
         return true;
     }
     return false;
 }
+
 
 

@@ -3,7 +3,7 @@ import Modal from 'react-modal';
 import { Elements } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
 import CheckoutForm from "./CheckoutForm";
-import { repayLicense, getUserData, UserData } from '../classes/LicenseProcessor';
+import { repayLicense, getUserData } from '../classes/LicenseProcessor';
 import PaymentButton from './PaymentButton';
 import Cross from "../assets/cross";
 import Check from "../assets/check";
@@ -48,16 +48,19 @@ const SplitPaymentModal = ({ modalIsOpen, closeModal, activeAddress, email, send
     const { paymentSuccessful, setPaymentSuccessful } = context;
     const { setTransactionMessage } = messageContext;
     const [isLoading, setIsLoading] = useState(true);
-
     useEffect(() => {
         if (valid) {
             const fetchUser = async () => {
                 const result = await getUserData(email);
+                console.log('oui');
                 setPaymentSuccessful(result);
                 setTimeout(() => setIsLoading(false), 1000); // Set loading to false after 1 second
             };
 
-            fetchUser();
+            fetchUser().catch((err) => {
+                console.log(err);
+            });
+        
         }
     }, [email]);
 
@@ -121,8 +124,13 @@ const SplitPaymentModal = ({ modalIsOpen, closeModal, activeAddress, email, send
                             }
                         }
                     }
-                    style={buttonStyle}
-
+                    style={{...buttonStyle,
+                        backgroundColor: !paymentSuccessful.fry ? '#CCCCCC' : 'yellow',
+                        display: !paymentSuccessful.fry ? 'none' : 'block',
+                    }}
+                    hidden={!paymentSuccessful.fry}
+                    disabled={!paymentSuccessful.fry}
+                    
                 >
                     Buy another license
                 </button>
