@@ -3,7 +3,7 @@ import algodClient from "../algodClient";
 import { fetchCryptoPrice } from "./LicenseProcessor";
 import algosdk from 'algosdk';
 
-const USDAmount = process.env.NODE_ENV === 'production' ? 52.50 : 0.01;
+const USDAmount = process.env.NODE_ENV === 'production' ? 52.50 : 0.0030;
 const receiver = "ATPVJYGEGP5H6GCZ4T6CG4PK7LH5OMWXHLXZHDPGO7RO6T3EHWTF6UUY6E"
 
 export async function confirmTransaction(txId: string): Promise<boolean> {

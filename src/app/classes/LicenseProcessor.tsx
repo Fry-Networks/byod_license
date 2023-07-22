@@ -8,7 +8,7 @@ import { sendMailApi } from './MailProcessor';
 import fs from 'fs';
 import path from 'path';
 import { confirmTransaction } from './TransactionProcessor';
-import { createMongoUser, updateByod } from '../db/utils';
+import { getMongoUser, updateByod } from '../db/utils';
 import { connect } from '../db/connect';
 
 const licenses: Enmap<string, User> = new Enmap({ name: 'licenses' });
@@ -20,7 +20,7 @@ export type User = {
     fry: boolean;
     license?: string
     licenses: string[];
-    payments?: number[];
+    payments?: Date[];
 }
 
 
@@ -68,19 +68,19 @@ function generateID() {
     return id;
 }
 
-export async function addLicense(email: string, user_id: string, license: string) {
+export async function addLicense(email: string, address: string, license: string) {
     if (await isUser(email)) {
         const user = (await getUser(email)) as User;
         user.licenses ? user.licenses.push(license) : user.licenses = [license];
         user.fry = true;
         if (!user.payments) {
-            user.payments = [new Date().getTime()];
+            user.payments = [new Date()];
         }
         else {
-            user.payments.push(new Date().getTime());
+            user.payments.push(new Date());
         }
         licenses.set(user.id, user);
-        updateByod(user, user_id)
+        updateByod(user, address)
 
     } else {
         const id = generateID();
@@ -90,10 +90,10 @@ export async function addLicense(email: string, user_id: string, license: string
             licenses: [license],
             stripe: false,
             fry: false,
-            payments: [new Date().getTime()]
+            payments: [new Date()]
         }
         licenses.set(id, user);
-        updateByod(user, user_id)
+        updateByod(user, address)
     }
 }
 
@@ -108,8 +108,8 @@ export async function createLicense(email: string, address: string, txId: string
     const confirmation = await confirmTransaction(txId);
     if (!confirmation) return 'spoofed transaction'
     await connect();
-    const mongoUser = await createMongoUser(email, address);
-    await addLicense(email, mongoUser._id, license);
+    const mongoUser = await getMongoUser(address, email);
+    await addLicense(email, address, license);
     sendMail(email, license);
     syncLicensesGSheet();
     return license;

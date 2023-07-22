@@ -11,7 +11,7 @@ import SplitPaymentModal from './PaymentModal';
 import algodClient from '../algodClient';
 import EmailInput from './EmailInput';
 import OpenButton from './OpenButton';
-const USDAmount = process.env.NODE_ENV === 'production' ? 52.50 : 0.01;
+const USDAmount = process.env.NODE_ENV === 'production' ? 52.50 : 0.0030;
 const FRYIndex = 924268058;
 
 interface TransactionMessageState {
@@ -65,6 +65,7 @@ export default function Transact() {
     }
     const to = "ATPVJYGEGP5H6GCZ4T6CG4PK7LH5OMWXHLXZHDPGO7RO6T3EHWTF6UUY6E"
     console.log("Sending transaction from: ", from, " to: ", to);
+    
     const params = await algodClient.getTransactionParams().do();
     let price = await fetchCryptoPrice();
     if (price) price = Math.floor((USDAmount / price));
