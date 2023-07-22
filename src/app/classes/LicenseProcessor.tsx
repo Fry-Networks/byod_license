@@ -108,7 +108,7 @@ export async function createLicense(email: string, address: string, txId: string
     const confirmation = await confirmTransaction(txId);
     if (!confirmation) return 'spoofed transaction'
     await connect();
-    const mongoUser = await getMongoUser(address, email);
+    const mongoUser = await getMongoUser({address, email});
     await addLicense(email, address, license);
     sendMail(email, license);
     syncLicensesGSheet();
