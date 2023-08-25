@@ -73,10 +73,10 @@ const SplitPaymentModal = ({ modalIsOpen, closeModal, activeAddress, email, send
             <div style={{ display: 'flex', gap: '10px', justifyContent: 'space-between',  position: 'relative' }}>
                 <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                     <PaymentMethod title="Algo Payment" isPaid={paymentSuccessful.algo} />
-                    <div style={{ marginTop: '10px' }}>
+                   
                         <p style={{ marginTop: '10px', marginBottom: '10px', textAlign: 'center', color: messages.algo.color, boxSizing: "border-box" }}>{messages.algo.message}</p>
                         {isLoading ? <p>Loading...</p> : <AlgoPaymentButton sendTransaction={sendAlgoTransaction} from={activeAddress} email={email} isPaid={paymentSuccessful.algo} />}
-                    </div>
+
                 </div>
         
                 <div style={{ width: '4px', backgroundColor: 'red' }} />
