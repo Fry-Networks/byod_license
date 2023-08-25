@@ -45,3 +45,5 @@ package-lock.json
 data/enmap.sqlite-shm
 data/enmap.sqlite-wal
 src/app/globals.css
+data/enmap.sqlite-shm
+data/enmap.sqlite-wal
