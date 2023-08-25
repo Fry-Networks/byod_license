@@ -15,7 +15,10 @@
 # production
 /build
 
-data
+/data
+enmap.sqlite
+enmap.sqlite-shm
+enmap.sqlite-wal
 # misc
 .DS_Store
 *.pem
@@ -39,3 +42,6 @@ package-lock.json
 
 /data
 
+data/enmap.sqlite-shm
+data/enmap.sqlite-wal
+src/app/globals.css

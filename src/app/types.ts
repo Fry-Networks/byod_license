@@ -14,11 +14,8 @@ export interface SplitPaymentModalProps {
     closeModal: () => void;
     activeAddress: string;
     email: string;
-    sendTransaction: (from: string, email: string) => Promise<void>;
+    sendAlgoTransaction: (from: string, email: string) => Promise<void>;
+    sendFryTransaction: (from: string, email: string) => Promise<void>;
     valid: boolean;
-    transactionMessage: {
-        message: string;
-        color: string;
-    };
     
 }

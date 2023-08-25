@@ -1,15 +1,13 @@
 import React, { useContext, useEffect, useState } from "react";
 import Modal from 'react-modal';
-import { Elements } from '@stripe/react-stripe-js';
-import { loadStripe } from '@stripe/stripe-js';
-import CheckoutForm from "./CheckoutForm";
 import { repayLicense, getUserData } from '../classes/LicenseProcessor';
-import PaymentButton from './PaymentButton';
+import AlgoPaymentButton from './AlgoPaymentButton';
+import FryPaymentButton from './FryPaymentButton';
 import Cross from "../assets/cross";
 import Check from "../assets/check";
 import { SplitPaymentModalProps } from '../types';
 import { CSSTransition } from 'react-transition-group';
-import { PaymentSuccessfulContext, TransactionMessageContext } from "./Transact";
+import { MessagesContext, PaymentSuccessfulContext } from "./Transact";
 require('dotenv').config();
 
 
@@ -32,27 +30,24 @@ const AnimatedElements: React.FC<AnimatedElementsProps> = ({ inProp, children })
         {children}
     </CSSTransition>
 );
-const public_key = process.env.NODE_ENV === 'production' ? process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY : process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY_TEST;
-const stripePromise = loadStripe(public_key!);
 
-const SplitPaymentModal = ({ modalIsOpen, closeModal, activeAddress, email, sendTransaction, valid, transactionMessage }: SplitPaymentModalProps) => {
+const SplitPaymentModal = ({ modalIsOpen, closeModal, activeAddress, email, sendAlgoTransaction, sendFryTransaction, valid }: SplitPaymentModalProps) => {
     const context = useContext(PaymentSuccessfulContext);
-    const messageContext = useContext(TransactionMessageContext);
+    const messagesContext = useContext(MessagesContext);
     if (!context) {
         throw new Error("ChildComponent must be used within a PaymentSuccessfulProvider");
     }
-    if (!messageContext) {
+    if (!messagesContext) {
         throw new Error("ChildComponent must be used within a TransactionMessageProvider");
     }
 
     const { paymentSuccessful, setPaymentSuccessful } = context;
-    const { setTransactionMessage } = messageContext;
+    const { messages, setTransactionMessages } = messagesContext;
     const [isLoading, setIsLoading] = useState(true);
     useEffect(() => {
         if (valid) {
             const fetchUser = async () => {
                 const result = await getUserData(email);
-                console.log('oui');
                 setPaymentSuccessful(result);
                 setTimeout(() => setIsLoading(false), 1000); // Set loading to false after 1 second
             };
@@ -60,7 +55,7 @@ const SplitPaymentModal = ({ modalIsOpen, closeModal, activeAddress, email, send
             fetchUser().catch((err) => {
                 console.log(err);
             });
-        
+
         }
     }, [email]);
 
@@ -73,64 +68,72 @@ const SplitPaymentModal = ({ modalIsOpen, closeModal, activeAddress, email, send
         >
             <h1 style={headerStyle}>Payment</h1>
             <p style={{ textAlign: 'center' }}>
-                You will have to pay 52,50$ USD using Stripe and 52,50$ USD (in $FRY) using your wallet.
+                You will have to pay 52,50$ USD (in $ALGO) and 52,50$ USD (in $FRY) using your wallet.
             </p>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '15px', alignItems: 'stretch', position: 'relative' }}> {/* Added position: relative here */}
-                <div style={{ flex: 1, paddingRight: '10px' }}>
-                    <PaymentMethod title="Stripe Payment" isPaid={paymentSuccessful.stripe} />
+            <div style={{ display: 'flex', gap: '10px', justifyContent: 'space-between',  position: 'relative' }}>
+                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                    <PaymentMethod title="Algo Payment" isPaid={paymentSuccessful.algo} />
                     <div style={{ marginTop: '10px' }}>
-                        <AnimatedElements inProp={paymentSuccessful.stripe}>
-                            <Elements stripe={stripePromise}>
-                                <CheckoutForm email={email} payment={{
-                                    data: paymentSuccessful,
-                                    setData: setPaymentSuccessful
-                                }} />
-                            </Elements>
-                        </AnimatedElements>
+                        <p style={{ marginTop: '10px', marginBottom: '10px', textAlign: 'center', color: messages.algo.color, boxSizing: "border-box" }}>{messages.algo.message}</p>
+                        {isLoading ? <p>Loading...</p> : <AlgoPaymentButton sendTransaction={sendAlgoTransaction} from={activeAddress} email={email} isPaid={paymentSuccessful.algo} />}
                     </div>
                 </div>
-
-                <div style={{ position: 'absolute', left: '50%', borderLeft: '4px solid #CCCCCC', height: '100%', borderRadius: '10%' }} /> {/* Adjust this div */}
-                <div style={{ flex: 1, paddingLeft: '10px', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
-                    <PaymentMethod title="Wallet Payment" isPaid={paymentSuccessful.fry} />
-                    <p style={{ marginTop: '10px', marginBottom: '10px', textAlign: 'center', color: transactionMessage.color }}>{transactionMessage.message}</p>
-                    {isLoading ? <p>Loading...</p> : <PaymentButton valid={paymentSuccessful.stripe} sendTransaction={sendTransaction} from={activeAddress} email={email} isPaid={paymentSuccessful.fry} />}
+        
+                <div style={{ width: '4px', backgroundColor: 'red' }} />
 
 
+
+
+                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                    <PaymentMethod title="Fry Payment" isPaid={paymentSuccessful.fry} />
+                    <p style={{ marginTop: '10px', marginBottom: '10px', textAlign: 'center', color: messages.fry.color }}>{messages.fry.message}</p>
+                    {isLoading ? <p>Loading...</p> : <FryPaymentButton sendTransaction={sendFryTransaction} from={activeAddress} email={email} isPaid={paymentSuccessful.fry} enabled={paymentSuccessful.algo} />}
                 </div>
-
             </div>
+
             <div style={{ display: 'flex', justifyContent: 'center', marginTop: '20px' }}>
                 <button
                     onClick={
                         async () => {
                             const payAgain = await repayLicense(email);
                             if (payAgain) {
-                               
+
                                 setPaymentSuccessful({
-                                    stripe: false,
+                                    algo: false,
                                     fry: false
                                 });
-                                setTransactionMessage({
-                                    message: "",
-                                    color: "#000"
-                                });
+
+                                setTransactionMessages({
+                                    algo: {
+                                        message: "",
+                                        color: "#000"
+                                    }, fry: {
+                                        message: "",
+                                        color: "#000"
+                                    }
+                                })
                             }
                             else {
-                                setTransactionMessage({
-                                    message: "You can't pay for another license at the moment...",
-                                    color: "#FF0000"
-                                });
+                                setTransactionMessages({
+                                    algo: {
+                                        message: "",
+                                        color: "#000"
+                                    }, fry: {
+                                        message: "You can't pay for another license at the moment...",
+                                        color: "#FF0000"
+                                    }
+                                })
                             }
                         }
                     }
-                    style={{...buttonStyle,
+                    style={{
+                        ...buttonStyle,
                         backgroundColor: !paymentSuccessful.fry ? '#CCCCCC' : 'yellow',
                         display: !paymentSuccessful.fry ? 'none' : 'block',
                     }}
                     hidden={!paymentSuccessful.fry}
                     disabled={!paymentSuccessful.fry}
-                    
+
                 >
                     Buy another license
                 </button>
@@ -139,10 +142,16 @@ const SplitPaymentModal = ({ modalIsOpen, closeModal, activeAddress, email, send
                 <button onClick={
                     () => {
                         closeModal();
-                        setTransactionMessage({
-                            message: "",
-                            color: "#000"
-                        });
+                        setTransactionMessages({
+                            algo: {
+                                message: "",
+                                color: "#000"
+                            }, fry: {
+                                message: "",
+                                color: "#000"
+                            }
+                        })
+
 
                     }
                 } style={buttonStyle}>Close</button>

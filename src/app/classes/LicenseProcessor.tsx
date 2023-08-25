@@ -16,7 +16,7 @@ const licenses: Enmap<string, User> = new Enmap({ name: 'licenses' });
 export type User = {
     id: string;
     email: string;
-    stripe: boolean;
+    algo: boolean;
     fry: boolean;
     license?: string
     licenses: string[];
@@ -25,13 +25,14 @@ export type User = {
 
 
 export type UserData = {
-    stripe: boolean;
+    algo: boolean;
     fry: boolean;
 }
 
 
 const capKey = "REDACTED_ROTATE_ME"
 const FRYCapID = 24874;
+const AlgoCapID = 4030;
 
 export async function getUser(email: string): Promise<User | null> {
     console.log(licenses)
@@ -46,12 +47,12 @@ export async function getUserData(email: string): Promise<UserData> {
     const user = await getUser(email);
     if (!user) {
         return {
-            stripe: false,
+            algo: false,
             fry: false
         }
     }
     return {
-        stripe: user.stripe,
+        algo: user.algo,
         fry: user.fry
     }
 }
@@ -88,7 +89,7 @@ export async function addLicense(email: string, address: string, license: string
             id,
             email: email,
             licenses: [license],
-            stripe: false,
+            algo: false,
             fry: false,
             payments: [new Date()]
         }
@@ -104,14 +105,14 @@ export async function createLicense(email: string, address: string, txId: string
     }
     const user = await getUser(email);
     if (!user) return null;
-    if (!user.stripe) return null;
-    const confirmation = await confirmTransaction(txId);
+    if (!user.algo) return null;
+    const confirmation = await confirmTransaction(txId, "fry", email);
     if (!confirmation) return 'spoofed transaction'
     await connect();
     const mongoUser = await getMongoUser({address, email});
     await addLicense(email, address, license);
     sendMail(email, license);
-    syncLicensesGSheet();
+    if(process.env.NODE_ENV === 'production') syncLicensesGSheet();
     return license;
 }
 
@@ -121,7 +122,7 @@ export async function createUser(email: string) {
         id,
         email,
         licenses: [],
-        stripe: false,
+        algo: false,
         fry: false
     }
     licenses.set(id, user);
@@ -153,7 +154,7 @@ export async function syncLicensesGSheet() {
 
     const spreadsheetId = '1F-bYXgD8RRgQcUzcjqr1CkzY84Zc-i_mE6HhDboCkzQ';
 
-    const licensesToWrite = licenses.filter(user => (!!user.email && !!user.licenses.length)).map(user => {
+    const licensesToWrite = licenses.filter(user => (!!user.email && !!user.licenses?.length)).map(user => {
         const lonelyLicense = user.license
 
         return [user.email, user.licenses.join('\n') + (lonelyLicense ? '\n' + lonelyLicense : '')];
@@ -197,18 +198,19 @@ export async function sendMail(email: string, license: string) {
 
 }
 
-export async function fetchCryptoPrice() {
+export async function fetchCryptoPrice(asset: "algo" | "fry") {
+    const id = asset === "algo" ? AlgoCapID : FRYCapID;
     try {
         const response = await axios.get('https://pro-api.coinmarketcap.com/v2/cryptocurrency/quotes/latest', {
             params: {
-                id: FRYCapID,
+                id: id,
                 convert: 'USD'
             },
             headers: {
                 'X-CMC_PRO_API_KEY': capKey
             }
         });
-        const price = response.data.data[FRYCapID].quote.USD.price;
+        const price = response.data.data[id].quote.USD.price;
         return price;
     } catch (error) {
         console.error(error);
@@ -218,10 +220,11 @@ export async function fetchCryptoPrice() {
 export async function repayLicense(email: string) {
     const user = await getUser(email);
     if (!user) return false;
-    const condition = user.fry && user.stripe;
+    //@ts-ignore
+    const condition = user.stripe ? user.fry && user.stripe : user.fry && user.algo;
     if (condition) {
         user.fry = false;
-        user.stripe = false;
+        user.algo = false;
         await setUser(user);
     }
     return condition;

@@ -58,3 +58,13 @@ button {
   opacity: 0;
   transition: opacity 300ms;
 }
+
+p, button {
+  margin: 10px 0;
+  padding: 0;
+  border: none;
+}
+
+p, button {
+  box-sizing: border-box;
+}
