@@ -41,6 +41,7 @@ export async function getUser(email: string): Promise<User | null> {
 }
 export async function setUser(user: User) {
     licenses.set(user.id, user);
+    console.log('set user')
 }
 
 export async function getUserData(email: string): Promise<UserData> {
