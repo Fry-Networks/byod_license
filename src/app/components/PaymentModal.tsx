@@ -47,8 +47,10 @@ const SplitPaymentModal = ({ modalIsOpen, closeModal, activeAddress, email, send
     useEffect(() => {
         if (valid && modalIsOpen) {
             const fetchUser = async () => {
+                console.log(isUser(email));
                 if (!isUser(email)) {
                     const user  = await createUser(email)
+                    console.log(user);
                     setUser(user);
                 }
                 const result = await getUserData(email);
