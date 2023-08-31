@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useState } from "react";
 import Modal from 'react-modal';
-import { repayLicense, getUserData } from '../classes/LicenseProcessor';
+import { repayLicense, getUserData, createUser } from '../classes/LicenseProcessor';
 import AlgoPaymentButton from './AlgoPaymentButton';
 import FryPaymentButton from './FryPaymentButton';
 import Cross from "../assets/cross";
@@ -55,6 +55,11 @@ const SplitPaymentModal = ({ modalIsOpen, closeModal, activeAddress, email, send
             fetchUser().catch((err) => {
                 console.log(err);
             });
+
+            createUser(email).catch((err) => {
+                console.log(err);
+            }
+            );
 
         }
     }, [email]);
