@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useState } from "react";
 import Modal from 'react-modal';
-import { repayLicense, getUserData, createUser } from '../classes/LicenseProcessor';
+import { repayLicense, getUserData, createUser, isUser } from '../classes/LicenseProcessor';
 import AlgoPaymentButton from './AlgoPaymentButton';
 import FryPaymentButton from './FryPaymentButton';
 import Cross from "../assets/cross";
@@ -45,24 +45,23 @@ const SplitPaymentModal = ({ modalIsOpen, closeModal, activeAddress, email, send
     const { messages, setTransactionMessages } = messagesContext;
     const [isLoading, setIsLoading] = useState(true);
     useEffect(() => {
-        if (valid) {
+        if (valid && modalIsOpen) {
             const fetchUser = async () => {
                 const result = await getUserData(email);
                 setPaymentSuccessful(result);
                 setTimeout(() => setIsLoading(false), 1000); // Set loading to false after 1 second
             };
-
+    
             fetchUser().catch((err) => {
                 console.log(err);
             });
-
-            createUser(email).catch((err) => {
+    
+            if(!isUser(email)) createUser(email).catch((err) => {
                 console.log(err);
-            }
-            );
-
+            });
+    
         }
-    }, [email]);
+    }, [email, modalIsOpen]);
 
     return (
         <Modal
