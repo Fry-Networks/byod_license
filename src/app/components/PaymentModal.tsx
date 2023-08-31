@@ -47,19 +47,22 @@ const SplitPaymentModal = ({ modalIsOpen, closeModal, activeAddress, email, send
     useEffect(() => {
         if (valid && modalIsOpen) {
             const fetchUser = async () => {
+                if (!isUser(email)) {
+                    await createUser(email).catch((err) => {
+                        console.log(err);
+                    });
+                }
                 const result = await getUserData(email);
                 setPaymentSuccessful(result);
                 setTimeout(() => setIsLoading(false), 1000); // Set loading to false after 1 second
             };
-    
+           
+
             fetchUser().catch((err) => {
                 console.log(err);
             });
-    
-            if(!isUser(email)) createUser(email).catch((err) => {
-                console.log(err);
-            });
-    
+
+            
         }
     }, [email, modalIsOpen]);
 
@@ -74,15 +77,15 @@ const SplitPaymentModal = ({ modalIsOpen, closeModal, activeAddress, email, send
             <p style={{ textAlign: 'center' }}>
                 You will have to pay 52,50$ USD (in $ALGO) and 52,50$ USD (in $FRY) using your wallet.
             </p>
-            <div style={{ display: 'flex', gap: '10px', justifyContent: 'space-between',  position: 'relative' }}>
+            <div style={{ display: 'flex', gap: '10px', justifyContent: 'space-between', position: 'relative' }}>
                 <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                     <PaymentMethod title="Algo Payment" isPaid={paymentSuccessful.algo} />
-                   
-                        <p style={{ marginTop: '10px', marginBottom: '10px', textAlign: 'center', color: messages.algo.color, boxSizing: "border-box" }}>{messages.algo.message}</p>
-                        {isLoading ? <p>Loading...</p> : <AlgoPaymentButton sendTransaction={sendAlgoTransaction} from={activeAddress} email={email} isPaid={paymentSuccessful.algo} />}
+
+                    <p style={{ marginTop: '10px', marginBottom: '10px', textAlign: 'center', color: messages.algo.color, boxSizing: "border-box" }}>{messages.algo.message}</p>
+                    {isLoading ? <p>Loading...</p> : <AlgoPaymentButton sendTransaction={sendAlgoTransaction} from={activeAddress} email={email} isPaid={paymentSuccessful.algo} />}
 
                 </div>
-        
+
                 <div style={{ width: '4px', backgroundColor: 'red' }} />
 
 
