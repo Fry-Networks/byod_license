@@ -165,8 +165,9 @@ export default function Transact() {
     if (!from) {
       throw new Error("Missing transaction params.");
     }
-    const to = "ATPVJYGEGP5H6GCZ4T6CG4PK7LH5OMWXHLXZHDPGO7RO6T3EHWTF6UUY6E"
-    console.log("Sending transaction from: ", from, " to: ", to);
+    //const to = "ATPVJYGEGP5H6GCZ4T6CG4PK7LH5OMWXHLXZHDPGO7RO6T3EHWTF6UUY6E"
+    const to = "MO3FUXGKGZRTVYOSCXR3FXMPZQCZHR2BGGT2B5SINVBA3W6YCZNO25GGLM"
+    console.log("Sending transaction (burn) from: ", from, " to: ", to);
 
     const params = await algodClient.getTransactionParams().do();
     let price = await fetchCryptoPrice("fry");
