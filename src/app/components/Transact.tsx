@@ -166,8 +166,8 @@ export default function Transact() {
       throw new Error("Missing transaction params.");
     }
     //const to = "ATPVJYGEGP5H6GCZ4T6CG4PK7LH5OMWXHLXZHDPGO7RO6T3EHWTF6UUY6E"
-    const to = "MO3FUXGKGZRTVYOSCXR3FXMPZQCZHR2BGGT2B5SINVBA3W6YCZNO25GGLM"
-    console.log("Sending transaction (burn) from: ", from, " to: ", to);
+    const burn = "MO3FUXGKGZRTVYOSCXR3FXMPZQCZHR2BGGT2B5SINVBA3W6YCZNO25GGLM"
+    console.log("Sending transaction (burn) from: ", from, " to: ", burn);
 
     const params = await algodClient.getTransactionParams().do();
     let price = await fetchCryptoPrice("fry");
@@ -176,7 +176,7 @@ export default function Transact() {
     const note = algosdk.encodeObj({ note: 'Payment from Pera Wallet' });
     const transaction = algosdk.makeAssetTransferTxnWithSuggestedParamsFromObject({
       from,
-      to,
+      to: burn,
       assetIndex: FRYIndex,
       amount: price * 1000000,
       note: note,
