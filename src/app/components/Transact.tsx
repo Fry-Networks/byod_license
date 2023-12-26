@@ -193,7 +193,6 @@ export default function Transact() {
     const encodedTransaction = algosdk.encodeUnsignedTransaction(transaction);
 
     const signedTransactions = await signTransactions([encodedTransaction]);
-
     const waitRoundsToConfirm = 2;
     try {
       setMessages({

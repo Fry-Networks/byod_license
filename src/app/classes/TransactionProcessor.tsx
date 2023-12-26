@@ -17,18 +17,15 @@ export async function confirmTransaction(txId: string, asset: "algo" | "fry", em
 
     // Get the confirmed transaction
     const confirmedTxn = await algodClient.pendingTransactionInformation(txId).do();
-    console.log(confirmedTxn);
 
     // Check if the receiver is correct
     const actualReceiverField = asset === "algo" ? 'rcv' : 'arcv';
     const actualReceiver = algosdk.encodeAddress(confirmedTxn['txn']['txn'][actualReceiverField]);
-    console.log(actualReceiver, receiver);
     if (actualReceiver !== receiver) return 2;
 
     // Check if the amount is correct (assuming price is in MicroAlgos)
     const amountField = asset === "algo" ? 'amt' : 'aamt';
     const amount = confirmedTxn['txn']['txn'][amountField] || 0; // Default to 0 if amt field is missing
-    console.log(amount, lowerBound, upperBound);
     if (amount < lowerBound || amount > upperBound) return 3;
 
     // If everything passed return true
