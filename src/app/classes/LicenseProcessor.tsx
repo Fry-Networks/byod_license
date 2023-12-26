@@ -35,7 +35,6 @@ const FRYCapID = 24874;
 const AlgoCapID = 4030;
 
 export async function getUser(email: string): Promise<User | null> {
-    console.log(licenses)
     const user = licenses.find(user => user.email === email);
     return user || null;
 }
