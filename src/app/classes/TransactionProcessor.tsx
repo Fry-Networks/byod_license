@@ -6,10 +6,10 @@ import algosdk from 'algosdk';
 const USDAmount = process.env.NODE_ENV === 'production' ? 52.50 : 0.0030;
 const receiver = "ATPVJYGEGP5H6GCZ4T6CG4PK7LH5OMWXHLXZHDPGO7RO6T3EHWTF6UUY6E"
 
-export async function confirmTransaction(txId: string, asset: "algo" | "fry", email: string): Promise<boolean> {
+export async function confirmTransaction(txId: string, asset: "algo" | "fry", email: string): Promise<number> {
     console.log(txId, asset);
     let price = await fetchCryptoPrice(asset);
-    if (!price) return false;
+    if (!price) return 1;
     price = Math.floor((USDAmount / price)) * 1000000; // Adjust to MicroAlgos
 
     const lowerBound = price - (price * 0.05); // lower bound is 95% of the price
@@ -23,27 +23,27 @@ export async function confirmTransaction(txId: string, asset: "algo" | "fry", em
     const actualReceiverField = asset === "algo" ? 'rcv' : 'arcv';
     const actualReceiver = algosdk.encodeAddress(confirmedTxn['txn']['txn'][actualReceiverField]);
     console.log(actualReceiver, receiver);
-    if (actualReceiver !== receiver) return false;
+    if (actualReceiver !== receiver) return 2;
 
     // Check if the amount is correct (assuming price is in MicroAlgos)
     const amountField = asset === "algo" ? 'amt' : 'aamt';
     const amount = confirmedTxn['txn']['txn'][amountField] || 0; // Default to 0 if amt field is missing
     console.log(amount, lowerBound, upperBound);
-    if (amount < lowerBound || amount > upperBound) return false;
+    if (amount < lowerBound || amount > upperBound) return 3;
 
     // If everything passed return true
     try {
         let user = await getUser(email);
-        if (!user) return false;
+        if (!user) return 4;
         user[asset] = true;
         setUser(user);
     } catch (error) {
         console.error(error);
-        return false;
+        return 5;
     }
 
     
 
-    return true;
+    return 0;
 }
 

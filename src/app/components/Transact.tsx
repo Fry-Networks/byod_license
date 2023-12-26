@@ -125,12 +125,12 @@ export default function Transact() {
         })
         return;
       }
-      const isTxValid = await confirmTransaction(id, "algo", email);
+      const isTxValid = (await confirmTransaction(id, "algo", email)) === 0;
       if (!isTxValid) {
         setMessages({
           ...messages,
           algo: {
-            message: "Transaction didn't match!",
+            message: "Transaction didn't match! code: " + isTxValid,
             color: "#e5424d"
           }
         })
@@ -172,7 +172,15 @@ export default function Transact() {
     const params = await algodClient.getTransactionParams().do();
     let price = await fetchCryptoPrice("fry");
     if (price) price = Math.floor((USDAmount / price));
-    else return;
+    else {
+      setMessages({
+        ...messages,
+        fry: {
+          message: "Transaction failed! (price)",
+          color: "#e5424d"
+        }
+      })
+    }
     const note = algosdk.encodeObj({ note: 'Payment from Pera Wallet' });
     const transaction = algosdk.makeAssetTransferTxnWithSuggestedParamsFromObject({
       from,

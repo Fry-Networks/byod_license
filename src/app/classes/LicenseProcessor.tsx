@@ -107,8 +107,8 @@ export async function createLicense(email: string, address: string, txId: string
     const user = await getUser(email);
     if (!user) return null;
     if (!user.algo) return null;
-    const confirmation = await confirmTransaction(txId, "fry", email);
-    if (!confirmation) return 'spoofed transaction'
+    const confirmation = (await confirmTransaction(txId, "fry", email)) === 0;
+    if (!confirmation) return 'spoofed transaction code: ' + confirmation;
     await connect();
     const mongoUser = await getMongoUser({address, email});
     await addLicense(email, address, license);
@@ -215,6 +215,7 @@ export async function fetchCryptoPrice(asset: "algo" | "fry") {
         return price;
     } catch (error) {
         console.error(error);
+        return null
     }
 }
 
