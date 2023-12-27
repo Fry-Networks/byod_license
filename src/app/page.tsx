@@ -24,7 +24,7 @@ export default function Home() {
         <h1
           className='text-4xl text-left text-white align-middle'
         >
-          MAINTENANCE (Don't make any transaction!)
+        BYOD License
         </h1>
       </div>
       <Payment />
