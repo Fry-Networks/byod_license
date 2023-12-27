@@ -74,6 +74,9 @@ const SplitPaymentModal = ({ modalIsOpen, closeModal, activeAddress, email, send
         >
             <h1 style={headerStyle}>Payment</h1>
             <p style={{ textAlign: 'center' }}>
+                MAINTENANCE
+                Anyone making a transaction now won't get a license, and won't get refunded
+
                 You will have to pay 52,50$ USD (in $ALGO) and 52,50$ USD (in $FRY) using your wallet.
             </p>
             <div style={{ display: 'flex', gap: '10px', justifyContent: 'space-between', position: 'relative' }}>

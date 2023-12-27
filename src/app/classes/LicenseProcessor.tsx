@@ -112,8 +112,8 @@ export async function createLicense(email: string, address: string, txId: string
     const mongoUser = await getMongoUser({address, email});
     console.log(`Creating license for ${email} with address ${address}: ${license}`);
     await addLicense(email, address, license);
-    sendMail(email, license);
-    if(process.env.NODE_ENV === 'production') syncLicensesGSheet();
+    //sendMail(email, license);
+    //if(process.env.NODE_ENV === 'production') syncLicensesGSheet();
     return license;
 }
 
