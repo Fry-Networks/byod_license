@@ -6,7 +6,11 @@ const nextConfig = {
     experimental: {
         serverActions: {
             
-            allowedOrigins: ["https://byod.fryfoundation.com"]
+            allowedOrigins: ["https://byod.fryfoundation.com",
+             "byod.fryfoundation.com",
+              "https://www.byod.fryfoundation.com", 
+              "www.byod.fryfoundation.com",
+              "localhost:3001"]
         }
     },
     headers: async () => {
