@@ -1,3 +1,4 @@
+'use client';
 import React, { useContext, useEffect, useState } from "react";
 import Modal from 'react-modal';
 import { repayLicense, getUserData, createUser, isUser, setUser } from '../classes/LicenseProcessor';
@@ -9,10 +10,6 @@ import { SplitPaymentModalProps } from '../types';
 import { CSSTransition } from 'react-transition-group';
 import { MessagesContext, PaymentSuccessfulContext } from "./Transact";
 require('dotenv').config();
-
-
-
-
 
 const PaymentMethod = ({ title, isPaid }: { title: string, isPaid: boolean }) => (
     <div style={flexContainerStyle}>
