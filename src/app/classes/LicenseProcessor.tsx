@@ -106,8 +106,8 @@ export async function createLicense(email: string, address: string, txId: string
     const user = await getUser(email);
     if (!user) return null;
     if (!user.algo) return null;
-    const confirmation = (await confirmTransaction(txId, "fry", email)) === 0;
-    if (!confirmation) return 'spoofed transaction code: ' + confirmation;
+    const confirmation = await confirmTransaction(txId, "fry", email)
+    if (confirmation !== 0) return 'spoofed transaction code: ' + confirmation;
     await connect();
     const mongoUser = await getMongoUser({address, email});
     console.log(`Creating license for ${email} with address ${address}: ${license}`);

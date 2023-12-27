@@ -127,8 +127,9 @@ export default function Transact() {
         })
         return;
       }
-      const isTxValid = (await confirmTransaction(id, "algo", email)) === 0;
-      if (!isTxValid) {
+      const isTxValid = await confirmTransaction(id, "algo", email)
+
+      if (isTxValid !== 0) {
         setMessages({
           ...messages,
           algo: {

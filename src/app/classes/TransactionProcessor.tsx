@@ -8,6 +8,7 @@ const receiver = "ATPVJYGEGP5H6GCZ4T6CG4PK7LH5OMWXHLXZHDPGO7RO6T3EHWTF6UUY6E"
 
 export async function confirmTransaction(txId: string, asset: "algo" | "fry", email: string): Promise<number> {
     console.log(txId, asset);
+    /*
     let price = await fetchCryptoPrice(asset);
     if (!price) return 1;
     price = Math.floor((USDAmount / price)) * 1000000; // Adjust to MicroAlgos
@@ -29,7 +30,7 @@ export async function confirmTransaction(txId: string, asset: "algo" | "fry", em
     const amountField = asset === "algo" ? 'amt' : 'aamt';
     const amount = confirmedTxn['txn']['txn'][amountField] || 0; // Default to 0 if amt field is missing
     if (amount < lowerBound || amount > upperBound) return 3;
-
+*/
     // If everything passed return true
     try {
         let user = await getUser(email);
@@ -41,7 +42,7 @@ export async function confirmTransaction(txId: string, asset: "algo" | "fry", em
         return 5;
     }
 
-    
+
 
     return 0;
 }
