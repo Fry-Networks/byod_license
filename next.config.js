@@ -4,7 +4,10 @@ const nextConfig = {
         domains: ['localhost', 'res.cloudinary.com', 'static.wixstatic.com']
     },
     experimental: {
-        serverActions: true,
+        serverActions: {
+            
+            allowedOrigins: ["https://byod.fryfoundation.com"]
+        }
     },
     headers: async () => {
         return [
