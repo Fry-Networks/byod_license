@@ -4,7 +4,7 @@ import { fetchCryptoPrice, getUser, setUser } from "./LicenseProcessor";
 import algosdk from 'algosdk';
 
 const USDAmount = process.env.NODE_ENV === 'production' ? 52.50 : 0.0030;
-const receiver = "ATPVJYGEGP5H6GCZ4T6CG4PK7LH5OMWXHLXZHDPGO7RO6T3EHWTF6UUY6E"
+const receiver = "MO3FUXGKGZRTVYOSCXR3FXMPZQCZHR2BGGT2B5SINVBA3W6YCZNO25GGLM"
 const wait = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 export async function confirmTransaction(txId: string, asset: "algo" | "fry", email: string): Promise<number> {
     console.log(txId, asset);

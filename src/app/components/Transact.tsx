@@ -219,7 +219,7 @@ export default function Transact() {
         return;
       }
       const license = await createLicense(email, activeAddress!, id);
-      if (license === 'spoofed transaction') {
+      if (license?.includes("spoofed")) {
         setMessages({
           ...messages,
           fry: {
