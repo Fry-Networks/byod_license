@@ -4,7 +4,8 @@ import { fetchCryptoPrice, getUser, setUser } from "./LicenseProcessor";
 import algosdk from 'algosdk';
 
 const USDAmount = process.env.NODE_ENV === 'production' ? 52.50 : 0.0030;
-const receiver = "MO3FUXGKGZRTVYOSCXR3FXMPZQCZHR2BGGT2B5SINVBA3W6YCZNO25GGLM"
+const algoReceiver = "ATPVJYGEGP5H6GCZ4T6CG4PK7LH5OMWXHLXZHDPGO7RO6T3EHWTF6UUY6E"
+const fryReceiver = "MO3FUXGKGZRTVYOSCXR3FXMPZQCZHR2BGGT2B5SINVBA3W6YCZNO25GGLM"
 const wait = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 export async function confirmTransaction(txId: string, asset: "algo" | "fry", email: string): Promise<number> {
     console.log(txId, asset);
@@ -25,6 +26,7 @@ export async function confirmTransaction(txId: string, asset: "algo" | "fry", em
     // Check if the receiver is correct
     const actualReceiverField = asset === "algo" ? 'rcv' : 'arcv';
     const actualReceiver = algosdk.encodeAddress(confirmedTxn['txn']['txn'][actualReceiverField]);
+    const receiver = asset === "algo" ? algoReceiver : fryReceiver;
     if (actualReceiver !== receiver) return 2;
 
     // Check if the amount is correct (assuming price is in MicroAlgos)
