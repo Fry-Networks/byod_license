@@ -51,3 +51,5 @@ data/enmap.sqlite-shm
 data/enmap.sqlite-wal
 
 .env
+
+licenses.json

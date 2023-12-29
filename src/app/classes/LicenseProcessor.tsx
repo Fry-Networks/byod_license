@@ -12,6 +12,9 @@ import { getMongoUser, updateByod } from '../db/utils';
 import { connect } from '../db/connect';
 
 const licenses: Enmap<string, User> = new Enmap({ name: 'licenses' });
+//export to json file
+const string = licenses.export();
+fs.writeFileSync(path.resolve('./licenses.json'), string);
 
 export type User = {
     id: string;
