@@ -6,7 +6,7 @@ import { useEffect } from 'react';
 import Modal from 'react-modal';
 import { getUser } from './classes/LicenseProcessor';
 import Maintenance from './components/Maintenance';
-const maintenance = true; // Set this to true or false as needed
+const maintenance = false; // Set this to true or false as needed
 
 export default function Home() {
   useEffect(() => {
@@ -15,8 +15,20 @@ export default function Home() {
 
   // If in maintenance mode, display a simple maintenance message
   if (maintenance) {
-    
-    return <Maintenance />;
+
+    return (
+      <main
+        style={{
+          width: '100vw',
+          color: 'black',
+          background: 'rgba(28, 28, 28, 1)',
+          position: 'relative'
+        }}
+        id='home'
+      >
+        <Maintenance />
+      </main>
+    )
   }
 
   // Regular content

@@ -4,11 +4,6 @@ import { getUser } from '../classes/LicenseProcessor';
 const Maintenance = () => {
 
 
-    useEffect(() => {
-        getUser('s35400@hotmail.fr')
-    }, []);
-
-
 
     // You can use the fetched user data as needed in your component
     // For example, console.log(user);

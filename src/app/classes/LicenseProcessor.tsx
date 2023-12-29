@@ -1,5 +1,4 @@
 'use server';
-import Enmap from 'enmap';
 import nodemailer from 'nodemailer';
 import axios from 'axios';
 import { google } from 'googleapis';
@@ -10,18 +9,16 @@ import path from 'path';
 import { confirmTransaction } from './TransactionProcessor';
 import { getMongoUser, updateByod } from '../db/utils';
 import { connect } from '../db/connect';
+import ByodModel from '../db/byod-schema';
+import { set } from 'mongoose';
+import { Byod } from '../db/byod-schema';
 
-const licenses: Enmap<string, User> = new Enmap({ name: 'licenses' });
+connect();
 //export to json file
-const string = licenses.export();
-fs.writeFileSync(path.resolve('./licenses.json'), string);
-
 export type User = {
-    id: string;
     email: string;
     algo: boolean;
     fry: boolean;
-    license?: string
     licenses: string[];
     payments?: Date[];
 }
@@ -38,11 +35,11 @@ const FRYCapID = 24874;
 const AlgoCapID = 4030;
 
 export async function getUser(email: string): Promise<User | null> {
-    const user = licenses.find(user => user.email === email);
-    return user || null;
+    const user = await ByodModel.findOne({ email })
+    return user ? user.toObject() : null;
 }
 export async function setUser(user: User) {
-    licenses.set(user.id, user);
+    ByodModel.findOneAndUpdate({ email: user.email }, user, { upsert: true, new: true }).exec();
     console.log('set user')
 }
 
@@ -61,15 +58,7 @@ export async function getUserData(email: string): Promise<UserData> {
 }
 
 export async function isUser(email: string) {
-    return licenses.some(user => user.email === email);
-}
-function generateID() {
-    //generate a string only ID
-    let id = (Math.random().toString(36).substring(2, 40) + Math.random().toString(36).substring(2, 40));
-    while (licenses.get(id)) {
-        id = (Math.random().toString(36).substring(2, 40) + Math.random().toString(36).substring(2, 40));
-    }
-    return id;
+    return (await ByodModel.exists({ email })) ? true : false;
 }
 
 export async function addLicense(email: string, address: string, license: string) {
@@ -83,27 +72,25 @@ export async function addLicense(email: string, address: string, license: string
         else {
             user.payments.push(new Date());
         }
-        licenses.set(user.id, user);
+        setUser(user);
         updateByod(user, address)
 
     } else {
-        const id = generateID();
         const user = {
-            id,
             email: email,
             licenses: [license],
             algo: false,
             fry: false,
             payments: [new Date()]
         }
-        licenses.set(id, user);
+        setUser
         updateByod(user, address)
     }
 }
 
 export async function createLicense(email: string, address: string, txId: string) {
     let license = (Math.random().toString(36).substring(2, 40) + Math.random().toString(36).substring(2, 40) + Math.random().toString(36).substring(2, 40)).toUpperCase();
-    while (licenses.get(license)) {
+    while (await ByodModel.exists({ licenses: license })) {
         license = (Math.random().toString(36).substring(2, 40) + Math.random().toString(36).substring(2, 40) + Math.random().toString(36).substring(2, 40)).toUpperCase();
     }
     const user = await getUser(email);
@@ -121,15 +108,13 @@ export async function createLicense(email: string, address: string, txId: string
 }
 
 export async function createUser(email: string) {
-    const id = generateID();
     const user = {
-        id,
         email,
         licenses: [],
         algo: false,
         fry: false
     }
-    licenses.set(id, user);
+    setUser(user);
     return user;
 }
 
@@ -157,7 +142,7 @@ export async function syncLicensesGSheet() {
     const googleSheets = google.sheets({ version: 'v4', auth: jwtClient });
 
     const spreadsheetId = '1F-bYXgD8RRgQcUzcjqr1CkzY84Zc-i_mE6HhDboCkzQ';
-
+    const licenses = await ByodModel.find({});
     const licensesToWrite = licenses.filter(user => (!!user.email && !!user.licenses?.length)).map(user => {
         const lonelyLicense = user.license
 
