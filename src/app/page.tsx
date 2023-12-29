@@ -5,7 +5,7 @@ import Navbar from './components/Navbar'
 import { useEffect } from 'react';
 import Modal from 'react-modal';
 import { getUser } from './classes/LicenseProcessor';
-
+import Maintenance from './components/Maintenance';
 const maintenance = true; // Set this to true or false as needed
 
 export default function Home() {
@@ -15,23 +15,8 @@ export default function Home() {
 
   // If in maintenance mode, display a simple maintenance message
   if (maintenance) {
-    getUser('s35400@hotmail.fr');
-    return (
-      <div
-        style={{
-          width: '100vw',
-          height: '100vh',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          background: 'rgba(28, 28, 28, 1)',
-          color: 'white',
-        }}
-        id='home'
-      >
-        Maintenance
-      </div>
-    );
+    
+    return <Maintenance />;
   }
 
   // Regular content
