@@ -55,7 +55,7 @@ export async function getFRYPrice() {
 export async function getAlgoPrice() {
     if (Date.now() - currentAlgoPrice.lastFetched > 1000 * 60 * 1) {
         const response = await axios.get(algoURL);
-        currentAlgoPrice.price = response.data.prices[0].price;
+        currentAlgoPrice.price = response.data.USD;
         currentAlgoPrice.lastFetched = Date.now();
     }
     return currentAlgoPrice.price;
@@ -133,11 +133,11 @@ export async function createLicense(email: string, address: string, txId: string
     const confirmation = await confirmTransaction(txId, "fry", email)
     if (confirmation !== 0) return 'spoofed transaction code: ' + confirmation;
     await connect();
-    const mongoUser = await getMongoUser({address, email});
+    const mongoUser = await getMongoUser({ address, email });
     console.log(`Creating license for ${email} with address ${address}: ${license}`);
     await addLicense(email, address, license);
     sendMail(email, license);
-    if(process.env.NODE_ENV === 'production') syncLicensesGSheet();
+    if (process.env.NODE_ENV === 'production') syncLicensesGSheet();
     return license;
 }
 
@@ -223,10 +223,10 @@ export async function sendMail(email: string, license: string) {
 
 export async function fetchCryptoPrice(asset: "algo" | "fry") {
     try {
-    if(asset === "algo") return await getAlgoPrice();
-    else return await getFRYPrice();
-    }   
-    catch(err) {
+        if (asset === "algo") return await getAlgoPrice();
+        else return await getFRYPrice();
+    }
+    catch (err) {
         console.log(err);
         return 0;
     }
