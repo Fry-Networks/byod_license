@@ -10,8 +10,6 @@ import { confirmTransaction } from './TransactionProcessor';
 import { getMongoUser, updateByod } from '../db/utils';
 import { connect } from '../db/connect';
 import ByodModel from '../db/byod-schema';
-import { set } from 'mongoose';
-import { Byod } from '../db/byod-schema';
 
 connect();
 //export to json file
@@ -30,9 +28,45 @@ export type UserData = {
 }
 
 
-const capKey = "REDACTED_ROTATE_ME"
-const FRYCapID = 24874;
-const AlgoCapID = 4030;
+//const capKey = "REDACTED_ROTATE_ME"
+//const FRYCapID = 24874;
+//const AlgoCapID = 4030;
+const FRYVerID = 924268058;
+const fryURL = `https://free-api.vestige.fi/assets/${FRYVerID}/price`
+const algoURL = "https://free-api.vestige.fi/currency/prices"
+let currentFRYPrice = {
+    lastFetched: 0,
+    price: 0
+}
+let currentAlgoPrice = {
+    lastFetched: 0,
+    price: 0
+}
+
+export async function getFRYPrice() {
+    if (Date.now() - currentFRYPrice.lastFetched > 1000 * 60 * 1) {
+        const response = await axios.get(fryURL);
+        currentFRYPrice.price = response.data.price;
+        currentFRYPrice.lastFetched = Date.now();
+    }
+    return currentFRYPrice.price;
+}
+
+export async function getAlgoPrice() {
+    if (Date.now() - currentAlgoPrice.lastFetched > 1000 * 60 * 1) {
+        const response = await axios.get(algoURL);
+        currentAlgoPrice.price = response.data.prices[0].price;
+        currentAlgoPrice.lastFetched = Date.now();
+    }
+    return currentAlgoPrice.price;
+}
+
+
+
+
+
+
+
 
 export async function getUser(email: string): Promise<User | null> {
     const user = await ByodModel.findOne({ email })
@@ -188,22 +222,13 @@ export async function sendMail(email: string, license: string) {
 }
 
 export async function fetchCryptoPrice(asset: "algo" | "fry") {
-    const id = asset === "algo" ? AlgoCapID : FRYCapID;
     try {
-        const response = await axios.get('https://pro-api.coinmarketcap.com/v2/cryptocurrency/quotes/latest', {
-            params: {
-                id: id,
-                convert: 'USD'
-            },
-            headers: {
-                'X-CMC_PRO_API_KEY': capKey
-            }
-        });
-        const price = response.data.data[id].quote.USD.price;
-        return price;
-    } catch (error) {
-        console.error(error);
-        return null
+    if(asset === "algo") return await getAlgoPrice();
+    else return await getFRYPrice();
+    }   
+    catch(err) {
+        console.log(err);
+        return 0;
     }
 }
 
