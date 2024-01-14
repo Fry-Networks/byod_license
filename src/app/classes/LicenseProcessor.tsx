@@ -32,7 +32,7 @@ export type UserData = {
 //const FRYCapID = 24874;
 //const AlgoCapID = 4030;
 const FRYVerID = 924268058;
-const fryURL = `https://free-api.vestige.fi/assets/${FRYVerID}/price`
+const fryURL = `https://free-api.vestige.fi/asset/${FRYVerID}/price`
 const algoURL = "https://free-api.vestige.fi/currency/prices"
 let currentFRYPrice = {
     lastFetched: 0,
