@@ -41,7 +41,8 @@ yarn-error.log*
 next-env.d.ts
 
 package-lock.json
-
+/config
+/configCopy
 /data
 
 data/enmap.sqlite-shm
