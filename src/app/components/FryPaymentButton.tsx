@@ -12,6 +12,7 @@ const FryPaymentButton = ({ sendTransaction, from, email, isPaid, enabled }: { s
   const { messages, setTransactionMessages } = context;
   // Update the sendTransaction function to handle the loading state
   const handleTransaction = async (from: string, email: string) => {
+    if (isLoading) return;
     setIsLoading(true);
 
     try {
