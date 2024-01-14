@@ -49,6 +49,7 @@ export async function getFRYPrice() {
         currentFRYPrice.price = response.data.price;
         currentFRYPrice.lastFetched = Date.now();
     }
+    console.log(currentFRYPrice.price)
     return currentFRYPrice.price;
 }
 
