@@ -183,12 +183,12 @@ export default function Transact() {
         }
       })
     }
-    const note = algosdk.encodeObj({ note: 'Payment from Pera Wallet' });
+    const note = algosdk.encodeObj({ note: 'BYOD Payment' });
     const transaction = algosdk.makeAssetTransferTxnWithSuggestedParamsFromObject({
       from,
       to: burn,
       assetIndex: FRYIndex,
-      amount: price * 1000000,
+      amount: price * 10000000,
       note: note,
       suggestedParams: params,
     });
