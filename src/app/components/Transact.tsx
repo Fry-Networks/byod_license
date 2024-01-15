@@ -188,7 +188,7 @@ export default function Transact() {
       from,
       to: burn,
       assetIndex: FRYIndex,
-      amount: price * 10000000,
+      amount: price * 1000000,
       note: note,
       suggestedParams: params,
     });

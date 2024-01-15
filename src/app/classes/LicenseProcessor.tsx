@@ -46,7 +46,7 @@ let currentAlgoPrice = {
 export async function getFRYPrice() {
     if (Date.now() - currentFRYPrice.lastFetched > 1000 * 60 * 1) {
         const response = await axios.get(fryURL);
-        currentFRYPrice.price = response.data.price;
+        currentFRYPrice.price = response.data.USD;
         currentFRYPrice.lastFetched = Date.now();
     }
     console.log(currentFRYPrice.price)
