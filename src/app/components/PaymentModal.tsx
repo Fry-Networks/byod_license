@@ -73,6 +73,8 @@ const SplitPaymentModal = ({ modalIsOpen, closeModal, activeAddress, email, send
             <p style={{ textAlign: 'center' }}>
                 You will have to pay 52,50$ USD (in $ALGO) and 52,50$ USD (in $FRY) using your wallet.
                 If you see an error, please contact us right away, and don't try to pay again.
+                
+                It is HIGHLY recommended to browse this website using a computer, as mobile devices are known to have issues with the transaction system we're using (the responsible team is working on it)
             </p>
             <div style={{ display: 'flex', gap: '10px', justifyContent: 'space-between', position: 'relative' }}>
                 <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
