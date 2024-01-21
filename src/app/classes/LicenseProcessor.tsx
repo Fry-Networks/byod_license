@@ -15,6 +15,7 @@ connect();
 //export to json file
 export type User = {
     email: string;
+    address ?: string;
     algo: boolean;
     fry: boolean;
     licenses: string[];
@@ -107,6 +108,7 @@ export async function addLicense(email: string, address: string, license: string
         else {
             user.payments.push(new Date());
         }
+        if(!user.address) user.address = address;
         setUser(user);
         updateByod(user, address)
 
@@ -118,7 +120,7 @@ export async function addLicense(email: string, address: string, license: string
             fry: false,
             payments: [new Date()]
         }
-        setUser
+        setUser(user)
         updateByod(user, address)
     }
 }

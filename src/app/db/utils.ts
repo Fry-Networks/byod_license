@@ -34,13 +34,13 @@ export async function getMongoUser({ address, email }: { address?: string, email
     throw new Error("Both email and address are missing");
 }
 export async function updateByod(byod: ByodUser, address: string) {
-    const user = await getMongoUser({address});
-    if(user) {
+    const user = await getMongoUser({ address });
+    if (user) {
         // Only keep the licenses and payments that are not already in byod.licenses and byod.payments
         const newLicenses = byod.licenses.filter(license => !user.byod.licenses.includes(license));
         const newPayments = byod.payments ? byod.payments.filter(payment => !user.byod.payments.includes(payment)).map(payment => {
             //check if payment is a Date or a timestamp, and convert to Date if necessary
-            if(typeof payment === 'number') {
+            if (typeof payment === 'number') {
                 return new Date(payment);
             } else {
                 return payment;
@@ -50,12 +50,12 @@ export async function updateByod(byod: ByodUser, address: string) {
         console.log(newLicenses);
         console.log(newPayments);
 
-        UserModel.updateOne({ _id: user._id }, { $push: { "byod.licenses": { $each: newLicenses }, "byod.payments": { $each: newPayments } } }).then((res) => {
+        UserModel.updateOne({ _id: user._id }, { $push: { "byod.licenses": { $each: newLicenses }, "byod.payments": { $each: newPayments } }, $set: { address } }).then((res) => {
             console.log(res);
         }
         ).catch((err) => {
             console.log(err);
         }
         );
-    } 
+    }
 }

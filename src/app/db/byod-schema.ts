@@ -1,6 +1,7 @@
 import mongoose, { mongo } from 'mongoose';
 export const byodSchema = new mongoose.Schema({
     email: { type: String, default: ""},
+    address: { type: String, default: ""},
     algo: {type: Boolean, default: false},
     fry: {type: Boolean, default: false},
     licenses: { type: [String], default: [] },
@@ -10,6 +11,7 @@ export const byodSchema = new mongoose.Schema({
 });
 export interface Byod extends mongoose.Document {
     email: string,
+    address: string,
     algo: boolean,
     fry: boolean,
     licenses: string[],

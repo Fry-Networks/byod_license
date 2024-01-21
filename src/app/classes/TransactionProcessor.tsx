@@ -39,6 +39,7 @@ export async function confirmTransaction(txId: string, asset: "algo" | "fry", em
         let user = await getUser(email);
         if (!user) return 4;
         user[asset] = true;
+        if(!user.address) user.address = confirmedTxn['txn']['txn']['snd'];
         setUser(user);
     } catch (error) {
         console.error(error);
