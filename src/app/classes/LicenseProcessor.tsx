@@ -15,7 +15,7 @@ connect();
 //export to json file
 export type User = {
     email: string;
-    address ?: string;
+    address?: string;
     algo: boolean;
     fry: boolean;
     licenses: string[];
@@ -108,7 +108,7 @@ export async function addLicense(email: string, address: string, license: string
         else {
             user.payments.push(new Date());
         }
-        if(!user.address) user.address = address;
+        if (!user.address) user.address = address;
         setUser(user);
         updateByod(user, address)
 
@@ -131,16 +131,27 @@ export async function createLicense(email: string, address: string, txId: string
         license = (Math.random().toString(36).substring(2, 40) + Math.random().toString(36).substring(2, 40) + Math.random().toString(36).substring(2, 40)).toUpperCase();
     }
     const user = await getUser(email);
-    if (!user) return null;
-    if (!user.algo) return null;
+    if (!user) {
+        console.log('User not found');
+        return null;
+    }
+    if (!user.algo) {
+        console.log('User has not paid for algo');
+        return null;
+    }
     const confirmation = await confirmTransaction(txId, "fry", email)
     if (confirmation !== 0) return 'spoofed transaction code: ' + confirmation;
     await connect();
-    const mongoUser = await getMongoUser({ address, email });
+    await getMongoUser({ address, email });
     console.log(`Creating license for ${email} with address ${address}: ${license}`);
     await addLicense(email, address, license);
-    sendMail(email, license);
-    if (process.env.NODE_ENV === 'production') syncLicensesGSheet();
+    await sendMail(email, license);
+    try {
+        if (process.env.NODE_ENV === 'production') syncLicensesGSheet();
+    } catch (err) {
+        console.log(err);
+    }
+
     return license;
 }
 
