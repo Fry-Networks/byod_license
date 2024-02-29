@@ -146,11 +146,13 @@ export async function createLicense(email: string, address: string, txId: string
     console.log(`Creating license for ${email} with address ${address}: ${license}`);
     await addLicense(email, address, license);
     await sendMail(email, license);
+    /*
     try {
         if (process.env.NODE_ENV === 'production') syncLicensesGSheet();
     } catch (err) {
         console.log(err);
     }
+    */
 
     return license;
 }
