@@ -4,7 +4,7 @@ export const byodSchema = new mongoose.Schema({
     address: { type: String, default: ""},
     algo: {type: Boolean, default: false},
     fry: {type: Boolean, default: false},
-    licenses: { type: [String], default: [] },
+    licenses: { type: [{license: String, used: Boolean}], default: [] },
     payments: { type: [Date], default: [] }
     
  
@@ -14,7 +14,7 @@ export interface Byod extends mongoose.Document {
     address: string,
     algo: boolean,
     fry: boolean,
-    licenses: string[],
+    licenses: {license: string, used: boolean}[],
     payments: Date[]
 }
 

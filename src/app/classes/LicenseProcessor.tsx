@@ -9,7 +9,7 @@ import path from 'path';
 import { confirmTransaction } from './TransactionProcessor';
 import { getMongoUser, updateByod } from '../db/utils';
 import { connect } from '../db/connect';
-import ByodModel from '../db/byod-schema';
+import ByodModel, { Byod } from '../db/byod-schema';
 
 connect();
 //export to json file
@@ -127,7 +127,7 @@ export async function addLicense(email: string, address: string, license: string
 
 export async function createLicense(email: string, address: string, txId: string) {
     let license = (Math.random().toString(36).substring(2, 40) + Math.random().toString(36).substring(2, 40) + Math.random().toString(36).substring(2, 40)).toUpperCase();
-    while (await ByodModel.exists({ licenses: license })) {
+    while (await ByodModel.exists({ ['licenses.license']: license })) {
         license = (Math.random().toString(36).substring(2, 40) + Math.random().toString(36).substring(2, 40) + Math.random().toString(36).substring(2, 40)).toUpperCase();
     }
     const user = await getUser(email);
@@ -169,52 +169,6 @@ export async function createUser(email: string) {
 }
 
 
-
-export async function syncLicensesGSheet() {
-    const jwtClient = new google.auth.JWT(
-        key.client_email,
-        undefined,
-        key.private_key,
-        ['https://www.googleapis.com/auth/spreadsheets'],
-        undefined
-    );
-
-    jwtClient.authorize(function (err, tokens) {
-        if (err) {
-            console.log(err);
-            return;
-        } else {
-            console.log("Successfully connected to Google Sheets API!");
-        }
-    });
-
-
-    const googleSheets = google.sheets({ version: 'v4', auth: jwtClient });
-
-    const spreadsheetId = '1F-bYXgD8RRgQcUzcjqr1CkzY84Zc-i_mE6HhDboCkzQ';
-    const licenses = await ByodModel.find({});
-    const licensesToWrite = licenses.filter(user => (!!user.email && !!user.licenses?.length)).map(user => {
-        const lonelyLicense = user.license
-
-        return [user.email, user.licenses.join('\n') + (lonelyLicense ? '\n' + lonelyLicense : '')];
-
-    });
-
-    // Add column headers to the beginning of the array
-    licensesToWrite.unshift(['Email', 'Licenses']);
-
-    await googleSheets.spreadsheets.values.update({
-        spreadsheetId,
-        range: "FRY License!A1",
-        valueInputOption: "USER_ENTERED",
-        requestBody: {
-            values: licensesToWrite
-        }
-    });
-
-
-    return licensesToWrite;
-}
 
 
 export async function sendMail(email: string, license: string) {
