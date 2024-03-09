@@ -37,7 +37,7 @@ export async function updateByod(byod: ByodUser, address: string) {
     const user = await getMongoUser({ address });
     if (user) {
         // Only keep the licenses and payments that are not already in byod.licenses and byod.payments
-        const newLicenses = byod.licenses.filter(license => !user.byod.licenses.includes(license.license));
+        const newLicenses = byod.licenses.filter(license => !user.byod.licenses.includes(license.license)).map(license => license.license);
         const newPayments = byod.payments ? byod.payments.filter(payment => !user.byod.payments.includes(payment)).map(payment => {
             //check if payment is a Date or a timestamp, and convert to Date if necessary
             if (typeof payment === 'number') {
