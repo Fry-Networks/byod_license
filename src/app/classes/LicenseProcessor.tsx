@@ -18,7 +18,7 @@ export type User = {
     address?: string;
     algo: boolean;
     fry: boolean;
-    licenses: string[];
+    licenses: {license: string, used: boolean}[];
     payments?: Date[];
 }
 
@@ -100,7 +100,7 @@ export async function isUser(email: string) {
 export async function addLicense(email: string, address: string, license: string) {
     if (await isUser(email)) {
         const user = (await getUser(email)) as User;
-        user.licenses ? user.licenses.push(license) : user.licenses = [license];
+        user.licenses ? user.licenses.push({license, used: false}) : user.licenses = [{license, used: false}];
         user.fry = true;
         if (!user.payments) {
             user.payments = [new Date()];
@@ -115,7 +115,7 @@ export async function addLicense(email: string, address: string, license: string
     } else {
         const user = {
             email: email,
-            licenses: [license],
+            licenses: [{license, used: false}],
             algo: false,
             fry: false,
             payments: [new Date()]
