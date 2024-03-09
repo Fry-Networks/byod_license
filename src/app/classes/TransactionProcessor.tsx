@@ -18,10 +18,10 @@ export async function confirmTransaction(txId: string, asset: "algo" | "fry", em
     const upperBound = price + (price * 0.05); // upper bound is 105% of the price
 
     // Get the confirmed transaction
-    console.log("Getting transaction info for txId: ", txId);
+    console.log("Getting transaction info for txId: ");
     await wait(2000)
     const confirmedTxn = await algodClient.pendingTransactionInformation(txId).do();
-    console.log("Got transaction info: ", confirmedTxn);
+    console.log("Got transaction info: ");
 
     // Check if the receiver is correct
     const actualReceiverField = asset === "algo" ? 'rcv' : 'arcv';

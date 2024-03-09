@@ -47,11 +47,9 @@ export async function updateByod(byod: ByodUser, address: string) {
             }
         }).filter(payment => !user.byod.payments!.includes(payment)) : [];
 
-        console.log(newLicenses);
-        console.log(newPayments);
 
         UserModel.updateOne({ _id: user._id }, { $push: { "byod.licenses": { $each: newLicenses }, "byod.payments": { $each: newPayments } }, $set: { address } }).then((res) => {
-            console.log(res);
+
         }
         ).catch((err) => {
             console.log(err);
