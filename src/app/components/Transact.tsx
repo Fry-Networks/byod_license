@@ -218,7 +218,7 @@ export default function Transact() {
         })
         return;
       }
-      const license = await createLicense(email, activeAddress!, id);
+      const license = await createLicense(email, from, id);
       if (license?.includes("spoofed")) {
         setMessages({
           ...messages,

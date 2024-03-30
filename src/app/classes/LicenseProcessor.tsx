@@ -108,7 +108,7 @@ export async function addLicense(email: string, address: string, license: string
         else {
             user.payments.push(new Date());
         }
-        if (!user.address) user.address = address;
+        user.address = address;
         setUser(user);
         updateByod(user, address)
 
