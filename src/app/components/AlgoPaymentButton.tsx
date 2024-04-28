@@ -34,7 +34,7 @@ const AlgoPaymentButton = ({ sendTransaction, from, email, isPaid }: { sendTrans
   if (!isPaid) {
     return (
       <button
-        onClick={() => handleTransaction(from, email)}
+        onClick={async () => await handleTransaction(from, email)}
         style={{
           ...buttonStyle,
           backgroundColor: !isPaid && !isLoading ? 'yellow' : 'grey',

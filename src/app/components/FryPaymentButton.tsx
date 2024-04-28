@@ -34,7 +34,7 @@ const FryPaymentButton = ({ sendTransaction, from, email, isPaid, enabled }: { s
   if (!isPaid) {
     return (
       <button
-        onClick={() => handleTransaction(from, email)}
+        onClick={async () => await handleTransaction(from, email)}
         style={{
           ...buttonStyle,
           backgroundColor: enabled && !isLoading ? 'yellow' : 'grey',
