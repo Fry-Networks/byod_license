@@ -10,6 +10,10 @@ const nextConfig = {
              "byod.fryfoundation.com",
               "https://www.byod.fryfoundation.com", 
               "www.byod.fryfoundation.com",
+              "https://byod.frynetworks.com",
+                "byod.frynetworks.com",
+                "https://www.byod.frynetworks.com",
+                "www.byod.frynetworks.com",
               "localhost:3001"]
         }
     },
