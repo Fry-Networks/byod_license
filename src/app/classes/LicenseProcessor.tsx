@@ -18,6 +18,7 @@ export type User = {
   address?: string;
   algo: boolean;
   fry: boolean;
+  stripe?: boolean;
   licenses: { license: string; used: boolean }[];
   payments?: Date[];
 };
@@ -217,6 +218,7 @@ export async function repayLicense(email: string) {
   const user = await getUser(email);
   if (!user) return false;
   //@ts-ignore
+
   const condition = user.stripe
     ? user.fry && user.stripe
     : user.fry && user.algo;
