@@ -1,18 +1,19 @@
 import React, { useContext, useState } from "react";
-import {
-  useWallet
-} from "@txnlab/use-wallet";
+import { useWallet } from "@txnlab/use-wallet";
 import algosdk from "algosdk";
 import {
   createLicense,
-  fetchCryptoPrice, createUser, isUser, UserData
-} from '../classes/LicenseProcessor';
-import SplitPaymentModal from './PaymentModal';
-import algodClient from '../algodClient';
-import EmailInput from './EmailInput';
-import OpenButton from './OpenButton';
+  fetchCryptoPrice,
+  createUser,
+  isUser,
+  UserData,
+} from "../classes/LicenseProcessor";
+import SplitPaymentModal from "./PaymentModal";
+import algodClient from "../algodClient";
+import EmailInput from "./EmailInput";
+import OpenButton from "./OpenButton";
 import { confirmTransaction } from "../classes/TransactionProcessor";
-const USDAmount = process.env.NODE_ENV === 'production' ? 52.50 : 0.0030;
+const USDAmount = process.env.NODE_ENV === "production" ? 103 : 0.003;
 
 const FRYIndex = 924268058;
 
@@ -21,51 +22,55 @@ interface MessagesState {
     algo: {
       message: string;
       color: string;
-    },
+    };
     fry: {
       message: string;
       color: string;
-    }
+    };
   };
-  setTransactionMessages: React.Dispatch<React.SetStateAction<{
-    algo: {
-      message: string;
-      color: string;
-    },
-    fry: {
-      message: string;
-      color: string;
-    }
-  }>>;
+  setTransactionMessages: React.Dispatch<
+    React.SetStateAction<{
+      algo: {
+        message: string;
+        color: string;
+      };
+      fry: {
+        message: string;
+        color: string;
+      };
+    }>
+  >;
 }
-
 
 interface PaymentSuccessfulState {
   paymentSuccessful: UserData;
   setPaymentSuccessful: React.Dispatch<React.SetStateAction<UserData>>;
 }
 
-export const PaymentSuccessfulContext = React.createContext<PaymentSuccessfulState | undefined>(undefined);
+export const PaymentSuccessfulContext = React.createContext<
+  PaymentSuccessfulState | undefined
+>(undefined);
 
+export const MessagesContext = React.createContext<MessagesState | undefined>(
+  undefined
+);
 
-
-export const MessagesContext = React.createContext<MessagesState | undefined>(undefined);
-
+const nfFryDomain = "https://api.nf.domains/nfd/fry.algo";
 
 export default function Transact() {
   const { activeAddress, signTransactions, sendTransactions } = useWallet();
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState("");
   const [valid, setValid] = useState(false);
   const [modalIsOpen, setModalIsOpen] = useState(false);
   const [messages, setMessages] = useState({
     algo: {
       message: "",
-      color: "#000"
+      color: "#000",
     },
     fry: {
       message: "",
-      color: "#000"
-    }
+      color: "#000",
+    },
   });
 
   const [paymentSuccessful, setPaymentSuccessful] = useState({} as UserData);
@@ -77,21 +82,32 @@ export default function Transact() {
   const closeModal = () => {
     setModalIsOpen(false);
   };
-  const sendAlgoTransaction = async (
-    from: string,
-    email: string
-  ) => {
+
+  const fetchNFDInfo = async () => {
+    try {
+      const response = await fetch(nfFryDomain);
+      if (!response.ok) {
+        throw new Error("Failed to fetch NFD data");
+      }
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const sendAlgoTransaction = async (from: string, email: string) => {
     if (!from) {
       throw new Error("Missing transaction params.");
     }
-    const to = "ATPVJYGEGP5H6GCZ4T6CG4PK7LH5OMWXHLXZHDPGO7RO6T3EHWTF6UUY6E"
+    const to = "ATPVJYGEGP5H6GCZ4T6CG4PK7LH5OMWXHLXZHDPGO7RO6T3EHWTF6UUY6E";
     console.log("Sending transaction from: ", from, " to: ", to);
 
     const params = await algodClient.getTransactionParams().do();
     let price = await fetchCryptoPrice("algo");
-    if (price) price = Math.floor((USDAmount / price));
+    if (price) price = Math.floor(USDAmount / price);
     else return;
-    const note = algosdk.encodeObj({ note: 'Payment from Pera Wallet' });
+    const note = algosdk.encodeObj({ note: "Payment from Pera Wallet" });
     const transaction = algosdk.makePaymentTxnWithSuggestedParamsFromObject({
       from,
       to,
@@ -109,9 +125,9 @@ export default function Transact() {
         ...messages,
         algo: {
           message: "Please wait for 2 rounds to confirm the transaction...",
-          color: "#000"
-        }
-      })
+          color: "#000",
+        },
+      });
       const { id } = await sendTransactions(
         signedTransactions,
         waitRoundsToConfirm
@@ -121,21 +137,21 @@ export default function Transact() {
           ...messages,
           algo: {
             message: "Transaction failed!",
-            color: "#e5424d"
-          }
-        })
+            color: "#e5424d",
+          },
+        });
         return;
       }
-      const isTxValid = await confirmTransaction(id, "algo", email)
+      const isTxValid = await confirmTransaction(id, "algo", email);
 
       if (isTxValid !== 0) {
         setMessages({
           ...messages,
           algo: {
             message: "Transaction didn't match! code: " + isTxValid,
-            color: "#e5424d"
-          }
-        })
+            color: "#e5424d",
+          },
+        });
       } else {
         const data = paymentSuccessful;
         paymentSuccessful.algo = true;
@@ -143,55 +159,56 @@ export default function Transact() {
         setMessages({
           ...messages,
           algo: {
-            message: "Successfully sent transaction! You can now make the second FRY payment.",
-            color: "#72AE55"
-          }
-        })
+            message:
+              "Successfully sent transaction! You can now make the second FRY payment.",
+            color: "#72AE55",
+          },
+        });
       }
-
     } catch (error: any) {
       console.error(error);
       setMessages({
         ...messages,
         algo: {
           message: error.message || "Transaction failed!",
-          color: "#e5424d"
-        }
-      })
+          color: "#e5424d",
+        },
+      });
     }
   };
-  const sendFryTransaction = async (
-    from: string,
-    email: string
-  ) => {
+  const sendFryTransaction = async (from: string, email: string) => {
     if (!from) {
       throw new Error("Missing transaction params.");
     }
     //const to = "ATPVJYGEGP5H6GCZ4T6CG4PK7LH5OMWXHLXZHDPGO7RO6T3EHWTF6UUY6E"
-    const burn = "MO3FUXGKGZRTVYOSCXR3FXMPZQCZHR2BGGT2B5SINVBA3W6YCZNO25GGLM"
+    const fryAlgoAddress = (await fetchNFDInfo()).depositAccount;
+    console.log(fryAlgoAddress);
+    // const burn = "MO3FUXGKGZRTVYOSCXR3FXMPZQCZHR2BGGT2B5SINVBA3W6YCZNO25GGLM";
+    const burn = fryAlgoAddress;
     console.log("Sending transaction (burn) from: ", from, " to: ", burn);
 
     const params = await algodClient.getTransactionParams().do();
     let price = await fetchCryptoPrice("fry");
-    if (price) price = Math.floor((USDAmount / price));
+    if (price) price = Math.floor(USDAmount / price);
     else {
       setMessages({
         ...messages,
         fry: {
           message: "Transaction failed! (price)",
-          color: "#e5424d"
-        }
-      })
+          color: "#e5424d",
+        },
+      });
     }
-    const note = algosdk.encodeObj({ note: 'BYOD Payment' });
-    const transaction = algosdk.makeAssetTransferTxnWithSuggestedParamsFromObject({
-      from,
-      to: burn,
-      assetIndex: FRYIndex,
-      amount: price * 1000000,
-      note: note,
-      suggestedParams: params,
-    });
+    const note = algosdk.encodeObj({ note: "BYOD Payment" });
+    const transaction =
+      algosdk.makeAssetTransferTxnWithSuggestedParamsFromObject({
+        from,
+        to: burn,
+        assetIndex: FRYIndex,
+        amount: price * 1000000,
+        note: note,
+        suggestedParams: params,
+      });
     const encodedTransaction = algosdk.encodeUnsignedTransaction(transaction);
 
     const signedTransactions = await signTransactions([encodedTransaction]);
@@ -201,9 +218,9 @@ export default function Transact() {
         ...messages,
         fry: {
           message: "Please wait for 2 rounds to confirm the transaction...",
-          color: "#000"
-        }
-      })
+          color: "#000",
+        },
+      });
       const { id } = await sendTransactions(
         signedTransactions,
         waitRoundsToConfirm
@@ -213,9 +230,9 @@ export default function Transact() {
           ...messages,
           fry: {
             message: "Transaction failed!",
-            color: "#e5424d"
-          }
-        })
+            color: "#e5424d",
+          },
+        });
         return;
       }
       const license = await createLicense(email, activeAddress!, id);
@@ -224,9 +241,9 @@ export default function Transact() {
           ...messages,
           fry: {
             message: "Transaction didn't match!",
-            color: "#e5424d"
-          }
-        })
+            color: "#e5424d",
+          },
+        });
       } else if (license) {
         const data = paymentSuccessful;
         paymentSuccessful.fry = true;
@@ -234,22 +251,22 @@ export default function Transact() {
         setMessages({
           ...messages,
           fry: {
-            message: "Transaction sent! You will receive an email with your license key shortly.",
-            color: "#72AE55"
-          }
-        })
+            message:
+              "Transaction sent! You will receive an email with your license key shortly.",
+            color: "#72AE55",
+          },
+        });
       } else {
         setMessages({
           ...messages,
           fry: {
             message: "Transaction failed!",
-            color: "#e5424d"
-          }
-        })
+            color: "#e5424d",
+          },
+        });
 
         console.error("Transaction failed!");
       }
-
     } catch (error: any) {
       console.error(error);
 
@@ -257,12 +274,9 @@ export default function Transact() {
         ...messages,
         fry: {
           message: error.message || "Transaction failed!",
-          color: "#e5424d"
-        }
-      })
-
-
-
+          color: "#e5424d",
+        },
+      });
     }
   };
 
@@ -271,10 +285,20 @@ export default function Transact() {
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-      <PaymentSuccessfulContext.Provider value={{ paymentSuccessful, setPaymentSuccessful }}>
-        <MessagesContext.Provider value={{ messages, setTransactionMessages: setMessages }}>
-
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+      }}
+    >
+      <PaymentSuccessfulContext.Provider
+        value={{ paymentSuccessful, setPaymentSuccessful }}
+      >
+        <MessagesContext.Provider
+          value={{ messages, setTransactionMessages: setMessages }}
+        >
           <SplitPaymentModal
             modalIsOpen={modalIsOpen}
             closeModal={closeModal}
@@ -285,7 +309,10 @@ export default function Transact() {
             valid={valid}
           />
           <EmailInput email={email} setEmail={setEmail} setValid={setValid} />
-          <OpenButton valid={valid} showSplitPaymentModal={showSplitPaymentModal} />
+          <OpenButton
+            valid={valid}
+            showSplitPaymentModal={showSplitPaymentModal}
+          />
         </MessagesContext.Provider>
       </PaymentSuccessfulContext.Provider>
     </div>
