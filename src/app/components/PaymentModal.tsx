@@ -192,7 +192,7 @@ const SplitPaymentModal = ({
             const payAgain = await repayLicense(email);
             if (payAgain) {
               setPaymentSuccessful({
-                algo: false,
+                algo: true,
                 fry: false,
               });
 

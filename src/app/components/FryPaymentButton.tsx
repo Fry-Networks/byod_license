@@ -58,7 +58,7 @@ const FryPaymentButton = ({
         disabled={condition && !isPaid}
         hidden={condition}
       >
-        {isLoading ? "Processing..." : "$FRY Payment (103.00$ USD)"}
+        {isLoading ? "Processing..." : "$FRY Payment (105.00$ USD)"}
       </button>
     );
   } else return null;
