@@ -13,7 +13,7 @@ import algodClient from "../algodClient";
 import EmailInput from "./EmailInput";
 import OpenButton from "./OpenButton";
 import { confirmTransaction } from "../classes/TransactionProcessor";
-const USDAmount = process.env.NODE_ENV === "production" ? 103 : 0.003;
+const USDAmount = process.env.NODE_ENV === "production" ? 105 : 0.003;
 
 const FRYIndex = 924268058;
 
