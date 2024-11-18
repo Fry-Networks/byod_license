@@ -115,7 +115,7 @@ export async function addLicense(
     const user = {
       email: email,
       licenses: [{ license, used: false }],
-      algo: false,
+      algo: true,
       fry: false,
       payments: [new Date()],
     };
@@ -146,10 +146,10 @@ export async function createLicense(
     console.log("User not found");
     return null;
   }
-  if (!user.algo) {
-    console.log("User has not paid for algo");
-    return null;
-  }
+  // if (!user.algo) {
+  //   console.log("User has not paid for algo");
+  //   return null;
+  // }
   const confirmation = await confirmTransaction(txId, "fry", email);
   if (confirmation !== 0) return "spoofed transaction code: " + confirmation;
   await connect();
