@@ -99,7 +99,7 @@ const SplitPaymentModal = ({
     >
       <h1 style={headerStyle}>Payment</h1>
       <p style={{ textAlign: "center" }}>
-        You will have to pay 103$ USD (in $FRY) using your wallet. If you see an
+        You will have to pay 105$ USD (in $FRY) using your wallet. If you see an
         error, please contact us right away, and don't try to pay again.
         <br />
         <strong style={{ color: "red", fontSize: "20px" }}>
