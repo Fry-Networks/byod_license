@@ -15,7 +15,7 @@ import OpenButton from "./OpenButton";
 import { confirmTransaction } from "../classes/TransactionProcessor";
 const USDAmount = process.env.NODE_ENV === "production" ? 105 : 0.003;
 
-const FRYIndex = 924268058;
+const FRYIndex = 2485314946;
 
 interface MessagesState {
   messages: {
@@ -212,7 +212,7 @@ export default function Transact() {
     const encodedTransaction = algosdk.encodeUnsignedTransaction(transaction);
 
     const signedTransactions = await signTransactions([encodedTransaction]);
-    const waitRoundsToConfirm = 2;
+    const waitRoundsToConfirm = 3;
     try {
       setMessages({
         ...messages,
