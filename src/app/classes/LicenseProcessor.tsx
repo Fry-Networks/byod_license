@@ -7,7 +7,7 @@ import { sendMailApi } from "./MailProcessor";
 import fs from "fs";
 import path from "path";
 import { confirmTransaction } from "./TransactionProcessor";
-import { getMongoUser, updateByod } from "../db/utils";
+import { getMongoUser, getPriceOfProject, updateByod } from "../db/utils";
 import { connect } from "../db/connect";
 import ByodModel, { Byod } from "../db/byod-schema";
 
@@ -20,7 +20,7 @@ export type User = {
   fry: boolean;
   stripe?: boolean;
   licenses: { license: string; used: boolean }[];
-  payments?: Date[];
+  payments?: { date: Date; price: number }[];
 };
 
 export type UserData = {
@@ -31,8 +31,7 @@ export type UserData = {
 //const capKey = "REDACTED_ROTATE_ME"
 //const FRYCapID = 24874;
 //const AlgoCapID = 4030;
-const FRYVerID = 2485314946;
-const fryURL = `https://free-api.vestige.fi/asset/${FRYVerID}/price`;
+
 const algoURL = "https://free-api.vestige.fi/currency/prices";
 let currentFRYPrice = {
   lastFetched: 0,
@@ -44,6 +43,8 @@ let currentAlgoPrice = {
 };
 
 export async function getFRYPrice() {
+  const FRYVerID = (await getPriceOfProject("BYOD"))?.asset_id ?? 2485314946;
+  const fryURL = `https://free-api.vestige.fi/asset/${FRYVerID}/price`;
   if (Date.now() - currentFRYPrice.lastFetched > 1000 * 60 * 1) {
     const response = await axios.get(fryURL);
     currentFRYPrice.price = response.data.USD;
@@ -104,9 +105,17 @@ export async function addLicense(
       : (user.licenses = [{ license, used: false }]);
     user.fry = true;
     if (!user.payments) {
-      user.payments = [new Date()];
+      user.payments = [
+        {
+          date: new Date(),
+          price: (await getPriceOfProject("BYOD"))?.price ?? 105,
+        },
+      ];
     } else {
-      user.payments.push(new Date());
+      user.payments.push({
+        date: new Date(),
+        price: (await getPriceOfProject("BYOD"))?.price ?? 105,
+      });
     }
     user.address = address;
     setUser(user);
@@ -117,7 +126,12 @@ export async function addLicense(
       licenses: [{ license, used: false }],
       algo: true,
       fry: false,
-      payments: [new Date()],
+      payments: [
+        {
+          date: new Date(),
+          price: (await getPriceOfProject("BYOD"))?.price ?? 105,
+        },
+      ],
     };
     setUser(user);
     updateByod(user, address);
@@ -206,7 +220,11 @@ export async function sendMail(email: string, license: string) {
 
 export async function fetchCryptoPrice(asset: "algo" | "fry") {
   try {
-    if (asset === "algo") return await getAlgoPrice();
+    if (
+      asset === "algo" ||
+      (await getPriceOfProject("BYOD"))?.asset_id === "11111111111"
+    )
+      return await getAlgoPrice();
     else return await getFRYPrice();
   } catch (err) {
     console.log(err);

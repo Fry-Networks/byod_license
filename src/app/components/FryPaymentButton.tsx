@@ -1,5 +1,6 @@
-import React, { useContext, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { MessagesContext } from "./Transact";
+import { getPriceOfProject } from "../db/utils";
 const FryPaymentButton = ({
   sendTransaction,
   from,
@@ -15,7 +16,19 @@ const FryPaymentButton = ({
 }) => {
   // Introduce a loading state
   const [isLoading, setIsLoading] = useState(false);
+  const [paymentPrice, setPaymentPrice] = useState(105);
   const context = useContext(MessagesContext);
+
+  const fetchPriceOfProject = async () => {
+    const price = await getPriceOfProject("BYOD");
+    if (price) {
+      setPaymentPrice(price.price);
+    }
+  };
+
+  useEffect(() => {
+    fetchPriceOfProject();
+  }, []);
 
   if (!context) {
     throw new Error(
@@ -58,7 +71,9 @@ const FryPaymentButton = ({
         disabled={condition && !isPaid}
         hidden={condition}
       >
-        {isLoading ? "Processing..." : "$FRY Payment (105.00$ USD)"}
+        {isLoading
+          ? "Processing..."
+          : `$FRY Payment (${paymentPrice.toFixed(2)}$ USD)`}
       </button>
     );
   } else return null;
