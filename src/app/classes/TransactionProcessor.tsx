@@ -1,9 +1,9 @@
 "use server";
 import algodClient from "../algodClient";
+import { getPriceOfProject } from "../db/utils";
 import { fetchCryptoPrice, getUser, setUser } from "./LicenseProcessor";
 import algosdk from "algosdk";
 
-const USDAmount = process.env.NODE_ENV === "production" ? 105 : 0.003;
 const algoReceiver =
   "ATPVJYGEGP5H6GCZ4T6CG4PK7LH5OMWXHLXZHDPGO7RO6T3EHWTF6UUY6E";
 const fryReceiver =
@@ -14,6 +14,11 @@ export async function confirmTransaction(
   asset: "algo" | "fry",
   email: string
 ): Promise<number> {
+  const USDAmount =
+    process.env.NODE_ENV === "production"
+      ? (await getPriceOfProject("BYOD"))?.price ?? 0
+      : 0.003;
+
   console.log(txId, asset);
 
   let price = await fetchCryptoPrice(asset);

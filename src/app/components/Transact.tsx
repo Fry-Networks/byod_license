@@ -13,6 +13,7 @@ import algodClient from "../algodClient";
 import EmailInput from "./EmailInput";
 import OpenButton from "./OpenButton";
 import { confirmTransaction } from "../classes/TransactionProcessor";
+import { getPriceOfProject } from "../db/utils";
 const USDAmount = process.env.NODE_ENV === "production" ? 105 : 0.003;
 
 const FRYIndex = 2485314946;
@@ -97,6 +98,11 @@ export default function Transact() {
   };
 
   const sendAlgoTransaction = async (from: string, email: string) => {
+    const USDAmount =
+      process.env.NODE_ENV === "production"
+        ? (await getPriceOfProject("BYOD"))?.price ?? 105
+        : 0.003;
+
     if (!from) {
       throw new Error("Missing transaction params.");
     }
@@ -177,6 +183,10 @@ export default function Transact() {
     }
   };
   const sendFryTransaction = async (from: string, email: string) => {
+    const USDAmount =
+      process.env.NODE_ENV === "production"
+        ? (await getPriceOfProject("BYOD"))?.price ?? 105
+        : 0.003;
     if (!from) {
       throw new Error("Missing transaction params.");
     }

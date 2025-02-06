@@ -15,6 +15,7 @@ import Check from "../assets/check";
 import { SplitPaymentModalProps } from "../types";
 import { CSSTransition } from "react-transition-group";
 import { MessagesContext, PaymentSuccessfulContext } from "./Transact";
+import { getPriceOfProject } from "../db/utils";
 require("dotenv").config();
 
 const PaymentMethod = ({
@@ -70,9 +71,19 @@ const SplitPaymentModal = ({
   }
 
   const { paymentSuccessful, setPaymentSuccessful } = context;
+  const [paymentPrice, setPaymentPrice] = useState(105);
   const { messages, setTransactionMessages } = messagesContext;
   const [isLoading, setIsLoading] = useState(true);
+
+  const fetchPaymentPrice = async () => {
+    const price = await getPriceOfProject("BYOD");
+    if (price) {
+      setPaymentPrice(price.price);
+    }
+  };
+
   useEffect(() => {
+    fetchPaymentPrice();
     if (valid && modalIsOpen) {
       const fetchUser = async () => {
         if (!(await isUser(email))) {
@@ -99,8 +110,8 @@ const SplitPaymentModal = ({
     >
       <h1 style={headerStyle}>Payment</h1>
       <p style={{ textAlign: "center" }}>
-        You will have to pay 105$ USD (in $FRY) using your wallet. If you see an
-        error, please contact us right away, and don't try to pay again.
+        {`You will have to pay ${paymentPrice}$ USD (in $FRY) using your wallet. If you see an
+        error, please contact us right away, and don't try to pay again.`}
         <br />
         <strong style={{ color: "red", fontSize: "20px" }}>
           It is HIGHLY recommended to browse this website using a computer, as
