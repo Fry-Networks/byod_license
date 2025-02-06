@@ -1,6 +1,5 @@
 import React, { useContext, useEffect, useState } from "react";
 import { MessagesContext } from "./Transact";
-import { getPriceOfProject } from "../db/utils";
 const FryPaymentButton = ({
   sendTransaction,
   from,
@@ -20,9 +19,13 @@ const FryPaymentButton = ({
   const context = useContext(MessagesContext);
 
   const fetchPriceOfProject = async () => {
-    const price = await getPriceOfProject("BYOD");
-    if (price) {
-      setPaymentPrice(price.price);
+    const response = await fetch(
+      `/api/price?projectName=${encodeURIComponent("BYOD")}`
+    );
+    const data = await response.json();
+
+    if (data.success) {
+      setPaymentPrice(data.data);
     }
   };
 

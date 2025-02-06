@@ -15,7 +15,6 @@ import Check from "../assets/check";
 import { SplitPaymentModalProps } from "../types";
 import { CSSTransition } from "react-transition-group";
 import { MessagesContext, PaymentSuccessfulContext } from "./Transact";
-import { getPriceOfProject } from "../db/utils";
 require("dotenv").config();
 
 const PaymentMethod = ({
@@ -76,15 +75,19 @@ const SplitPaymentModal = ({
   const [isLoading, setIsLoading] = useState(true);
 
   const fetchPaymentPrice = async () => {
-    const price = await getPriceOfProject("BYOD");
-    if (price) {
-      setPaymentPrice(price.price);
+    const response = await fetch(
+      `/api/price?projectName=${encodeURIComponent("BYOD")}`
+    );
+    const data = await response.json();
+
+    if (data.success) {
+      setPaymentPrice(data.data);
     }
   };
 
   useEffect(() => {
-    fetchPaymentPrice();
     if (valid && modalIsOpen) {
+      fetchPaymentPrice();
       const fetchUser = async () => {
         if (!(await isUser(email))) {
           const user = await createUser(email);
