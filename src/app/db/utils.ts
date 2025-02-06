@@ -1,6 +1,7 @@
 import UserModel, { User } from "./users-schema";
 import { User as ByodUser } from "../classes/LicenseProcessor";
 import PriceModel from "./price-schema";
+import { connect } from "./connect";
 
 export async function getMongoUser({
   address,
@@ -79,11 +80,13 @@ export async function updateByod(byod: ByodUser, address: string) {
 }
 
 export async function getPriceOfProject(projectName: string) {
-  const price = await PriceModel.findOne({ project_name: projectName });
+  try {
+    await connect(); // Ensure DB connection before query
+    const price = await PriceModel.findOne({ project_name: projectName });
 
-  if (!price) {
-    return null;
+    return price || null; // Return price or null if not found
+  } catch (error) {
+    console.error("Error fetching project price:", error);
+    return null; // Handle errors gracefully
   }
-
-  return price;
 }

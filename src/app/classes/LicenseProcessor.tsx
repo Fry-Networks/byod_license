@@ -10,6 +10,7 @@ import { confirmTransaction } from "./TransactionProcessor";
 import { getMongoUser, getPriceOfProject, updateByod } from "../db/utils";
 import { connect } from "../db/connect";
 import ByodModel, { Byod } from "../db/byod-schema";
+import PriceModel from "../db/price-schema";
 
 connect();
 //export to json file
