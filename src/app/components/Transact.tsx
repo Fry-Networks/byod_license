@@ -103,7 +103,7 @@ export default function Transact() {
     const data = await response.json();
 
     if (data.success) {
-      return data.data;
+      return data.data.price;
     }
 
     return null;

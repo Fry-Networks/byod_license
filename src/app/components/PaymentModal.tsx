@@ -81,7 +81,7 @@ const SplitPaymentModal = ({
     const data = await response.json();
 
     if (data.success) {
-      setPaymentPrice(data.data);
+      setPaymentPrice(data.data.price);
     }
   };
 
