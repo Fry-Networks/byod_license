@@ -6,7 +6,7 @@ export const byodSchema = new mongoose.Schema({
   fry: { type: Boolean, default: false },
   stripe: { type: Boolean },
   licenses: { type: [{ license: String, used: Boolean }], default: [] },
-  payments: { type: [Date], default: [] },
+  payments: { type: [{ date: Date, price: Number }], default: [] },
 });
 export interface Byod extends mongoose.Document {
   email: string;
@@ -15,7 +15,7 @@ export interface Byod extends mongoose.Document {
   fry: boolean;
   stripe?: boolean;
   licenses: { license: string; used: boolean }[];
-  payments: Date[];
+  payments: { date: Date; price: number }[];
 }
 
 const ByodModel =
