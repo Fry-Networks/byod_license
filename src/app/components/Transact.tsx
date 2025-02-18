@@ -13,6 +13,7 @@ import algodClient from "../algodClient";
 import EmailInput from "./EmailInput";
 import OpenButton from "./OpenButton";
 import { confirmTransaction } from "../classes/TransactionProcessor";
+import { getPriceOfProject } from "../db/utils";
 const USDAmount = process.env.NODE_ENV === "production" ? 105 : 0.003;
 
 const FRYIndex = 2485314946;
@@ -207,12 +208,22 @@ export default function Transact() {
     console.log(fryAlgoAddress);
     // const burn = "MO3FUXGKGZRTVYOSCXR3FXMPZQCZHR2BGGT2B5SINVBA3W6YCZNO25GGLM";
     const burn = fryAlgoAddress;
-    console.log("Sending transaction (burn) from: ", from, " to: ", burn);
+    console.log(
+      "Sending transaction (burn) from: ",
+      from,
+      " to: ",
+      burn,
+      " amount: ",
+      USDAmount
+    );
 
     const params = await algodClient.getTransactionParams().do();
     let price = await fetchCryptoPrice("fry");
-    if (price) price = Math.floor(USDAmount / price);
-    else {
+    if (price) {
+      price = Math.floor(USDAmount / price);
+
+      console.log(" Sending Amount : ", price);
+    } else {
       setMessages({
         ...messages,
         fry: {
@@ -221,6 +232,10 @@ export default function Transact() {
         },
       });
     }
+
+    const FRYIndex =
+      Number((await getPriceOfProject("BYOD"))?.asset_id) ?? 2485314946;
+
     const note = algosdk.encodeObj({ note: "BYOD Payment" });
     const transaction =
       algosdk.makeAssetTransferTxnWithSuggestedParamsFromObject({
