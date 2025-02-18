@@ -104,7 +104,7 @@ export default function Transact() {
     const data = await response.json();
 
     if (data.success) {
-      return data.data.price;
+      return data.data;
     }
 
     return null;
@@ -113,7 +113,7 @@ export default function Transact() {
   const sendAlgoTransaction = async (from: string, email: string) => {
     const USDAmount =
       process.env.NODE_ENV === "production"
-        ? (await fetchPrice()) ?? 105
+        ? (await fetchPrice()).price ?? 105
         : 0.003;
 
     if (!from) {
@@ -198,7 +198,7 @@ export default function Transact() {
   const sendFryTransaction = async (from: string, email: string) => {
     const USDAmount =
       process.env.NODE_ENV === "production"
-        ? (await fetchPrice()) ?? 105
+        ? (await fetchPrice()).price ?? 105
         : 0.003;
     if (!from) {
       throw new Error("Missing transaction params.");
@@ -233,8 +233,7 @@ export default function Transact() {
       });
     }
 
-    const FRYIndex =
-      Number((await getPriceOfProject("BYOD"))?.asset_id) ?? 2485314946;
+    const FRYIndex = Number((await fetchPrice()).asset_id) ?? 2485314946;
 
     const note = algosdk.encodeObj({ note: "BYOD Payment" });
     const transaction =
