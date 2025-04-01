@@ -188,6 +188,7 @@ export default function Footer() {
           </p>
           <p>
             <a href="https://www.frynetworks.com/shop">Buy $FRY Miners</a>
+          </p>
         </div>
         <div
           style={{
