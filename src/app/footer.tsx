@@ -178,22 +178,16 @@ export default function Footer() {
             Quick Links
           </h1>
           <p>
-            <a href="https://www.fryfoundation.com/">Home</a>
+            <a href="https://www.frynetworks.com/">Home</a>
           </p>
           <p>
-            <a href="https://www.fryfoundation.com/about">About Us</a>
+            <a href="https://www.frynetworks.com/about">About Us</a>
           </p>
           <p>
-            <a href="https://www.fryfoundation.com/roadmap">Roadmap</a>
+            <a href="https://www.frynetworks.com/roadmap">Roadmap</a>
           </p>
           <p>
-            <a href="https://www.fryfoundation.com/shop">Buy $FRY Miners</a>
-          </p>
-          <p>
-            <a href="https://docs.frynetworks.com/docs/miners/byod-bring-your-own-device">
-              Docs
-            </a>
-          </p>
+            <a href="https://www.frynetworks.com/shop">Buy $FRY Miners</a>
         </div>
         <div
           style={{
@@ -205,28 +199,28 @@ export default function Footer() {
         >
           <h1 style={{ marginBottom: "20px", fontSize: "20px" }}>Resources</h1>
           <p>
-            <a href="https://www.fryfoundation.com/instructions">
+            <a href="https://docs.frynetworks.com/docs/miners/byod-bring-your-own-device">
               General Setup Instructions
             </a>
           </p>
           <p>
-            <a href="https://www.fryfoundation.com/shipping-updates">
+            <a href="https://www.frynetworks.com/shipping-updates">
               Shipping Updates
             </a>
           </p>
           <p>
-            <a href="https://www.fryfoundation.com/recycle-miner-download">
+            <a href="https://www.frynetworks.com/recycle-miner-download">
               Recycle Mining
             </a>
           </p>
           <p>
-            <a href="https://www.fryfoundation.com/explorer">Explorer</a>
+            <a href="https://www.frynetworks.com/explorer">Explorer</a>
           </p>
           <p>
-            <a href="https://www.fryfoundation.com/news">News</a>
+            <a href="https://www.frynetworks.com/news">News</a>
           </p>
           <p>
-            <a href="https://www.fryfoundation.com/faq">FAQ</a>
+            <a href="https://www.frynetworks.com/faq">FAQ</a>
           </p>
         </div>
         <div
@@ -241,32 +235,32 @@ export default function Footer() {
             $FRY Mining
           </h1>
           <p>
-            <a href="https://www.fryfoundation.com/fry-recycle-mining">
+            <a href="https://www.frynetworks.com/fry-recycle-mining">
               $FRY Recycle Mining
             </a>
           </p>
           <p>
-            <a href="https://www.fryfoundation.com/free-tier-instructions">
+            <a href="https://www.frynetworks.com/free-tier-instructions">
               Free Tier Instructions
             </a>
           </p>
           <p>
-            <a href="https://www.fryfoundation.com/paid-tier-instructions">
+            <a href="https://www.frynetworks.com/paid-tier-instructions">
               Paid Tier Instructions
             </a>
           </p>
           <p>
-            <a href="https://www.fryfoundation.com/free-tier-registration">
+            <a href="https://www.frynetworks.com/free-tier-registration">
               Free Tier Registration
             </a>
           </p>
           <p>
-            <a href="https://www.fryfoundation.com/paid-tier-registration">
+            <a href="https://www.frynetworks.com/paid-tier-registration">
               Paid Tier Registration
             </a>
           </p>
           <p>
-            <a href="https://www.fryfoundation.com/paid-tier-plans">
+            <a href="https://www.frynetworks.com/paid-tier-plans">
               Paid Tier Plans
             </a>
           </p>
@@ -281,27 +275,27 @@ export default function Footer() {
         >
           <h1 style={{ marginBottom: "20px", fontSize: "20px" }}>Legal</h1>
           <p>
-            <a href="https://www.fryfoundation.com/terms-conditions">
+            <a href="https://www.frynetworks.com/terms-conditions">
               Terms & Conditions
             </a>
           </p>
           <p>
-            <a href="https://www.fryfoundation.com/privacy-policy">
+            <a href="https://www.frynetworks.com/privacy-policy">
               Privacy Policy
             </a>
           </p>
           <p>
-            <a href="https://www.fryfoundation.com/return-policy">
+            <a href="https://www.frynetworks.com/return-policy">
               Return Policy
             </a>
           </p>
           <p>
-            <a href="https://www.fryfoundation.com/digital-item-policy">
+            <a href="https://www.frynetworks.com/digital-item-policy">
               Digital Item Policy
             </a>
           </p>
           <p>
-            <a href="https://www.fryfoundation.com/warranty-policy">
+            <a href="https://www.frynetworks.com/warranty-policy">
               Warranty Policy
             </a>
           </p>
