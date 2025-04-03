@@ -184,7 +184,9 @@ export default function Footer() {
             <a href="https://www.frynetworks.com/about">About Us</a>
           </p>
           <p>
-            <a href="https://www.frynetworks.com/roadmap">Roadmap</a>
+            <a href="https://www.frynetworks.com/_files/ugd/b2ad32_e5ca12e2eb7e43c8a51da644d3ba20d4.pdf">
+              Roadmap
+            </a>
           </p>
           <p>
             <a href="https://www.frynetworks.com/shop">Buy $FRY Miners</a>
@@ -215,55 +217,10 @@ export default function Footer() {
             </a>
           </p>
           <p>
-            <a href="https://www.frynetworks.com/explorer">Explorer</a>
-          </p>
-          <p>
-            <a href="https://www.frynetworks.com/news">News</a>
+            <a href="https://explorer.frynetworks.com">Explorer</a>
           </p>
           <p>
             <a href="https://www.frynetworks.com/faq">FAQ</a>
-          </p>
-        </div>
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            marginRight: "10px",
-            marginLeft: "10px",
-          }}
-        >
-          <h1 style={{ marginBottom: "20px", fontSize: "20px" }}>
-            $FRY Mining
-          </h1>
-          <p>
-            <a href="https://www.frynetworks.com/fry-recycle-mining">
-              $FRY Recycle Mining
-            </a>
-          </p>
-          <p>
-            <a href="https://www.frynetworks.com/free-tier-instructions">
-              Free Tier Instructions
-            </a>
-          </p>
-          <p>
-            <a href="https://www.frynetworks.com/paid-tier-instructions">
-              Paid Tier Instructions
-            </a>
-          </p>
-          <p>
-            <a href="https://www.frynetworks.com/free-tier-registration">
-              Free Tier Registration
-            </a>
-          </p>
-          <p>
-            <a href="https://www.frynetworks.com/paid-tier-registration">
-              Paid Tier Registration
-            </a>
-          </p>
-          <p>
-            <a href="https://www.frynetworks.com/paid-tier-plans">
-              Paid Tier Plans
-            </a>
           </p>
         </div>
         <div
