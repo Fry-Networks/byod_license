@@ -1,29 +1,35 @@
-import React from 'react';
+import React from "react";
 
-const OpenButton = ({ valid, showSplitPaymentModal }: { valid: boolean, showSplitPaymentModal: Function }) => (
+const OpenButton = ({
+  valid,
+  showSplitPaymentModal,
+}: {
+  valid: boolean;
+  showSplitPaymentModal: Function;
+}) => (
   <button
     onClick={() => showSplitPaymentModal()}
     style={{
       ...buttonStyle,
-      backgroundColor: valid ? 'yellow' : 'grey',
+      backgroundColor: valid ? "yellow" : "grey",
     }}
     disabled={!valid}
   >
-    Pay for the license (105 USD)
+    Pay for the license (52.5 USD)
   </button>
 );
 
 const buttonStyle = {
-  backgroundColor: 'yellow',
-  border: 'none',
-  color: 'black',
-  padding: '15px 32px',
-  textDecoration: 'none',
-  display: 'inline-block',
-  fontSize: '16px',
-  margin: '4px 2px',
-  cursor: 'pointer',
-  borderRadius: '5px',
+  backgroundColor: "yellow",
+  border: "none",
+  color: "black",
+  padding: "15px 32px",
+  textDecoration: "none",
+  display: "inline-block",
+  fontSize: "16px",
+  margin: "4px 2px",
+  cursor: "pointer",
+  borderRadius: "5px",
 };
 
 export default OpenButton;
