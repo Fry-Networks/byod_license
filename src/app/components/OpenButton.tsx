@@ -15,7 +15,7 @@ const OpenButton = ({
     }}
     disabled={!valid}
   >
-    Pay for the license (52.5 USD)
+    Pay for the license
   </button>
 );
 
