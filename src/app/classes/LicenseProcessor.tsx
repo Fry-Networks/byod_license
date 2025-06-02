@@ -45,7 +45,8 @@ let currentAlgoPrice = {
 
 export async function getFRYPrice() {
   const FRYVerID = (await getPriceOfProject("BYOD"))?.asset_id ?? 2485314946;
-  const fryURL = `https://free-api.vestige.fi/asset/${FRYVerID}/price`;
+  // const fryURL = `https://free-api.vestige.fi/asset/${FRYVerID}/price`;
+  const fryURL = `https://api.vestigelabs.org/assets/price?asset_ids=${FRYVerID}&network_id=0&denominating_asset_id=0`;
   if (Date.now() - currentFRYPrice.lastFetched > 1000 * 60 * 1) {
     const response = await axios.get(fryURL);
     currentFRYPrice.price = response.data.USD;
