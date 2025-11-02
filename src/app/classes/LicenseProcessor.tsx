@@ -43,20 +43,94 @@ let currentAlgoPrice = {
   price: 0,
 };
 
+async function fetchFromTinyMan(assetId: string) {
+  try {
+    // TinyMan API endpoint for FRY price
+    const tinymanURL = `https://mainnet.analytics.tinyman.org/api/v1/assets/${assetId}/`;
+    const response = await axios.get(tinymanURL);
+    if (response.data && response.data.price_in_usd) {
+      return parseFloat(response.data.price_in_usd);
+    }
+    return null;
+  } catch (error) {
+    console.warn("TinyMan API fetch failed:", error);
+    return null;
+  }
+}
+
+async function fetchFromVestigeLabs(assetId: string) {
+  try {
+    const vestigeURL = `https://api.vestigelabs.org/assets/price?asset_ids=${assetId}`;
+    const response = await axios.get(vestigeURL);
+    if (response.data && response.data.length > 0) {
+      return parseFloat(response.data[0].price);
+    }
+    return null;
+  } catch (error) {
+    console.warn("VestigeLabs API fetch failed:", error);
+    return null;
+  }
+}
+
+function calculateDynamicFactor(
+  vestigePrice: number,
+  tinymanPrice: number | null
+): number | null {
+  // If we have both prices, use TinyMan as the reference (more reliable)
+  if (tinymanPrice && vestigePrice) {
+    const factor = tinymanPrice / vestigePrice;
+    console.log(
+      `Dynamic factor calculated: ${tinymanPrice} / ${vestigePrice} = ${factor}`
+    );
+    return factor;
+  }
+
+  // If only TinyMan price available, we can't calculate a factor
+  if (tinymanPrice && !vestigePrice) {
+    console.log("Only TinyMan price available, using direct price");
+    return null; // We'll use TinyMan price directly
+  }
+
+  // If neither price is available or only Vestige available, return null for fallback
+  return null;
+}
+
 export async function getFRYPrice() {
   const FRYVerID = (await getPriceOfProject("BYOD"))?.asset_id ?? 2485314946;
-  const fryURL = `https://api.vestigelabs.org/assets/price?asset_ids=${FRYVerID}`;
+
   if (Date.now() - currentFRYPrice.lastFetched > 1000 * 60 * 1) {
-    const response = await axios.get(fryURL);
-    if (!response.data || response.data.length === 0) {
-      console.error("Failed to fetch FRY price data");
-      return currentFRYPrice.price;
+    // Fetch from multiple sources
+    const vestigePrice = await fetchFromVestigeLabs(FRYVerID.toString());
+    const tinymanPrice = await fetchFromTinyMan(FRYVerID.toString());
+
+    let finalPrice: number;
+
+    // Priority: TinyMan direct price > Dynamic factor > Fallback factor
+    if (tinymanPrice) {
+      // Use TinyMan price directly (most reliable)
+      finalPrice = tinymanPrice;
+      console.log(`Using TinyMan direct price: $${finalPrice}`);
+    } else if (vestigePrice) {
+      // Calculate dynamic factor or use fallback
+      const dynamicFactor =
+        calculateDynamicFactor(vestigePrice, tinymanPrice) || 0.175;
+      finalPrice = vestigePrice * dynamicFactor;
+      console.log(
+        `Using Vestige price with ${
+          dynamicFactor === 0.175 ? "fallback" : "dynamic"
+        } factor: ${vestigePrice} * ${dynamicFactor} = ${finalPrice}`
+      );
+    } else {
+      // Complete fallback - use cached price or default
+      console.error("All price sources failed, using cached/default price");
+      return currentFRYPrice.price || 0.0099; // Default to $0.0099 if no cache
     }
-    const price = parseFloat(response.data[0].price) * 2 / 10;
-    currentFRYPrice.price = parseFloat(price.toFixed(6));
+
+    currentFRYPrice.price = parseFloat(finalPrice.toFixed(6));
     currentFRYPrice.lastFetched = Date.now();
   }
-  console.log(currentFRYPrice.price);
+
+  console.log("Final FRY price:", currentFRYPrice.price);
   return currentFRYPrice.price;
 }
 
@@ -67,7 +141,7 @@ export async function getAlgoPrice() {
       console.error("Failed to fetch ALGO price data");
       return currentAlgoPrice.price;
     }
-    const price = parseFloat(response.data[0].price) * 2 / 10;
+    const price = (parseFloat(response.data[0].price) * 2) / 10;
     currentAlgoPrice.price = parseFloat(price.toFixed(6));
     currentAlgoPrice.lastFetched = Date.now();
   }
@@ -231,12 +305,11 @@ export async function sendMail(email: string, license: string) {
 
 export async function fetchCryptoPrice(asset: "algo" | "fry") {
   try {
-    if (
-      asset === "algo" ||
-      (await getPriceOfProject("BYOD"))?.asset_id === "11111111111"
-    )
+    if (asset === "algo") {
       return await getAlgoPrice();
-    else return await getFRYPrice();
+    } else {
+      return await getFRYPrice();
+    }
   } catch (err) {
     console.log(err);
     return 0;
