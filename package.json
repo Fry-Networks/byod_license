@@ -7,7 +7,12 @@
     "build": "next build",
     "start": "next start -p 3001",
     "lint": "next lint",
-    "sync": "git pull && npm run build && pm2 restart byod"
+    "sync": "git pull && npm run build && pm2 restart byod",
+    "test:license": "tsx test-license-only.ts",
+    "test:complete": "tsx test-complete-flow.ts", 
+    "test:errors": "tsx test-error-scenarios.ts",
+    "test:cleanup": "tsx test-cleanup.ts",
+    "test:all": "npm run test:complete && npm run test:errors && npm run test:cleanup"
   },
   "dependencies": {
     "@blockshake/defly-connect": "^1.1.2",
@@ -53,6 +58,7 @@
   "devDependencies": {
     "@types/nodemailer": "^6.4.8",
     "@types/react-modal": "^3.16.0",
-    "@types/react-transition-group": "^4.4.6"
+    "@types/react-transition-group": "^4.4.6",
+    "tsx": "^4.20.4"
   }
 }

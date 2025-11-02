@@ -1,10 +1,13 @@
 import { getPriceOfProject } from "@/app/db/utils";
 import { NextResponse } from "next/server";
 
+// Force this route to be dynamic
+export const dynamic = "force-dynamic";
+
 export async function GET(request: Request) {
   try {
-    const { searchParams } = new URL(request.url);
-    const projectName = searchParams.get("projectName");
+    const url = new URL(request.url);
+    const projectName = url.searchParams.get("projectName");
 
     if (!projectName) {
       return NextResponse.json(

@@ -49,7 +49,7 @@ export default function Footer() {
               <path d="M170.494 60.131C170.429 50.674 162.699 43 153.2 43H46.8c-9.499 0-17.229 7.674-17.294 17.131-.001.028-.004.055-.004.082l-.002.037v79.5c0 9.512 7.761 17.25 17.3 17.25h106.4c9.539 0 17.3-7.738 17.3-17.25v-79.5l-.002-.037c0-.027-.003-.055-.004-.082zM46.8 51h106.4c4.458 0 8.191 3.138 9.09 7.309L100 101.749l-62.29-43.44C38.609 54.138 42.341 51 46.8 51zm106.4 98H46.8c-5.128 0-9.3-4.149-9.3-9.25V67.916l60.212 41.99a3.998 3.998 0 0 0 4.576 0l60.212-41.99v71.834c0 5.101-4.172 9.25-9.3 9.25z"></path>
             </g>
           </svg>
-          <span style={{ marginLeft: "10px" }}>contact@fryfoundation.com</span>
+          <span style={{ marginLeft: "10px" }}>no-reply@frynetworks.com</span>
         </p>
 
         <div
@@ -60,7 +60,7 @@ export default function Footer() {
             width: "230px",
           }}
         >
-          <a href="https://twitter.com/your-handle">
+          <a href="https://twitter.com/FrysCrypto">
             <svg
               fill="#ffffff"
               height="20px"
@@ -89,7 +89,7 @@ export default function Footer() {
               </g>
             </svg>
           </a>
-          <a href="https://discord.com/in/your-profile">
+          <a href="https://discord.gg/frynetworks">
             <svg
               width="20px"
               height="20px"
@@ -133,7 +133,7 @@ export default function Footer() {
               />
             </svg>
           </a>
-          <a href="https://linkedin.com/in/your-profile">
+          <a href="https://linkedin.com/company/fry-networks/">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               xmlnsXlink="http://www.w3.org/1999/xlink"
@@ -161,7 +161,7 @@ export default function Footer() {
               </g>
             </svg>
           </a>
-          <a href="https://facebook.com/your-profile">
+          <a href="https://www.facebook.com/profile.php?id=61561225691313">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               xmlnsXlink="http://www.w3.org/1999/xlink"
@@ -186,12 +186,8 @@ export default function Footer() {
               />
             </svg>
           </a>
-          <a href="https://youtube.com/c/your-channel">
-            <img
-              alt="Youtube"
-              style={{ width: "20px", height: "20px", objectFit: "cover" }}
-              src="https://static.wixstatic.com/media/11062b_fe985b889c144b348eefc7bbc67018b4~mv2.png/v1/fill/w_20,h_20,al_c,q_85,usm_0.66_1.00_0.01,enc_auto/11062b_fe985b889c144b348eefc7bbc67018b4~mv2.png"
-            />
+          <a href="https://github.com/FrysCrypto/">
+            <img src="https://cdn.simpleicons.org/github/white" alt="GitHub" width="20" style={{height: 'auto', display: 'block', border: 0}} />
           </a>
         </div>
 
@@ -202,7 +198,7 @@ export default function Footer() {
             fontSize: "12px",
           }}
         >
-          © Fry Foundation. All Rights Reserved.
+          © Fry Networks. All Rights Reserved.
         </p>
       </div>
       <div
