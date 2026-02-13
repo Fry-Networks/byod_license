@@ -1,18 +1,12 @@
 "use server";
-import nodemailer from "nodemailer";
 import axios from "axios";
-import { google } from "googleapis";
-import key from "../../../config/serviceAcc.json"; // replace with your json key file path
 import { sendMailApi } from "./MailProcessor";
 import fs from "fs";
 import path from "path";
 import { confirmTransaction } from "./TransactionProcessor";
 import { getMongoUser, getPriceOfProject, updateByod } from "../db/utils";
 import { connect } from "../db/connect";
-import ByodModel, { Byod } from "../db/byod-schema";
-import PriceModel from "../db/price-schema";
-
-connect();
+import ByodModel from "../db/byod-schema";
 //export to json file
 export type User = {
   email: string;
@@ -149,10 +143,12 @@ export async function getAlgoPrice() {
 }
 
 export async function getUser(email: string): Promise<User | null> {
+  await connect();
   const user = await ByodModel.findOne({ email });
   return user ? user.toObject() : null;
 }
 export async function setUser(user: User) {
+  await connect();
   ByodModel.findOneAndUpdate({ email: user.email }, user, {
     upsert: true,
     new: true,
@@ -175,6 +171,7 @@ export async function getUserData(email: string): Promise<UserData> {
 }
 
 export async function isUser(email: string) {
+  await connect();
   return (await ByodModel.exists({ email })) ? true : false;
 }
 
@@ -258,13 +255,6 @@ export async function createLicense(
   );
   await addLicense(email, address, license);
   await sendMail(email, license);
-  /*
-    try {
-        if (process.env.NODE_ENV === 'production') syncLicensesGSheet();
-    } catch (err) {
-        console.log(err);
-    }
-    */
 
   return license;
 }

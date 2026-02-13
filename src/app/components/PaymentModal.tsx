@@ -15,7 +15,6 @@ import Check from "../assets/check";
 import { SplitPaymentModalProps } from "../types";
 import { CSSTransition } from "react-transition-group";
 import { MessagesContext, PaymentSuccessfulContext } from "./Transact";
-require("dotenv").config();
 
 const PaymentMethod = ({
   title,

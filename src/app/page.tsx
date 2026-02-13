@@ -4,7 +4,6 @@ import Payment from './payment';
 import Navbar from './components/Navbar'
 import { useEffect } from 'react';
 import Modal from 'react-modal';
-import { getUser } from './classes/LicenseProcessor';
 import Maintenance from './components/Maintenance';
 const maintenance = false; // Set this to true or false as needed
 

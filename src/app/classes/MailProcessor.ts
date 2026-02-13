@@ -5,21 +5,47 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
-import credentials from '../../../config/credentials.json';
-import tokens from '../../../config/token.json';
 import { Options } from 'nodemailer/lib/mailer/index.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-// Keep initial credentials/tokens loaded from config
-const { client_secret, client_id, redirect_uris } = credentials.web;
-let oAuth2Client = new google.auth.OAuth2(client_id, client_secret, redirect_uris[0]);
-oAuth2Client.setCredentials(tokens);
+let oAuth2Client: InstanceType<typeof google.auth.OAuth2> | null = null;
+
+const requiredEnv = (name: string): string => {
+    const value = process.env[name];
+    if (!value) {
+        throw new Error(`${name} is not set`);
+    }
+    return value;
+};
+
+const getOAuth2Client = () => {
+    if (oAuth2Client) return oAuth2Client;
+
+    const clientId = requiredEnv('GMAIL_OAUTH_CLIENT_ID');
+    const clientSecret = requiredEnv('GMAIL_OAUTH_CLIENT_SECRET');
+    const redirectUri =
+        process.env.GMAIL_OAUTH_REDIRECT_URI || 'https://developers.google.com/oauthplayground';
+    const refreshToken = requiredEnv('GMAIL_OAUTH_REFRESH_TOKEN');
+    const accessToken = process.env.GMAIL_OAUTH_ACCESS_TOKEN;
+    const expiryDate = process.env.GMAIL_OAUTH_EXPIRY_DATE
+        ? Number(process.env.GMAIL_OAUTH_EXPIRY_DATE)
+        : undefined;
+
+    oAuth2Client = new google.auth.OAuth2(clientId, clientSecret, redirectUri);
+    oAuth2Client.setCredentials({
+        refresh_token: refreshToken,
+        ...(accessToken ? { access_token: accessToken } : {}),
+        ...(expiryDate ? { expiry_date: expiryDate } : {}),
+    });
+
+    return oAuth2Client;
+};
 
 // Helpers
 const getGmailService = () => {
-    return google.gmail({ version: 'v1', auth: oAuth2Client });
+    return google.gmail({ version: 'v1', auth: getOAuth2Client() });
 };
 
 const encodeMessage = (message: Buffer) => {
@@ -41,14 +67,6 @@ const redactEmail = (email?: string) => {
     const domain = parts[1];
     if (name.length <= 2) return `**@${domain}`;
     return `${name[0]}***${name[name.length - 1]}@${domain}`;
-};
-
-const redactToken = (t: any) => {
-    if (!t) return t;
-    const copy: any = { ...t };
-    if (copy.access_token) copy.access_token = copy.access_token.slice(0, 8) + '...[redacted]';
-    if (copy.refresh_token) copy.refresh_token = copy.refresh_token.slice(0, 8) + '...[redacted]';
-    return copy;
 };
 
 // Enhanced email logging utility (keeps logs consistent with wixPayments style)
@@ -115,23 +133,23 @@ export const sendMailApi = async (options: any): Promise<any> => {
         if (isAuthError) {
             emailLog.warning(`OAUTH TOKEN ISSUE - Attempting to refresh access token`);
             try {
+                const client = getOAuth2Client();
                 // refreshAccessToken is deprecated in newer google-auth-library versions,
                 // but older code uses refreshAccessToken. We attempt both patterns.
                 let refreshed: any;
-                if (typeof (oAuth2Client as any).refreshAccessToken === 'function') {
-                    refreshed = await (oAuth2Client as any).refreshAccessToken();
+                if (typeof (client as any).refreshAccessToken === 'function') {
+                    refreshed = await (client as any).refreshAccessToken();
                 } else {
-                    refreshed = await oAuth2Client.getAccessToken(); // fallback: triggers internal refresh
+                    refreshed = await client.getAccessToken(); // fallback: triggers internal refresh
                 }
 
                 const newTokens = refreshed?.credentials || refreshed;
                 emailLog.info(`OAUTH REFRESH ATTEMPT`, {
-                    hasNewToken: !!newTokens?.access_token,
-                    tokenPreview: newTokens ? redactToken(newTokens) : undefined
+                    hasNewToken: !!newTokens?.access_token
                 });
 
                 if (newTokens) {
-                    oAuth2Client.setCredentials(newTokens);
+                    client.setCredentials(newTokens);
                 }
 
                 emailLog.info(`OAUTH REFRESH SUCCESS - Retrying email send`);
