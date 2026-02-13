@@ -1,57 +1,42 @@
 'use client';
-import React, { useEffect } from 'react';
-import {
-    reconnectProviders,
-    useInitializeProviders,
-    WalletProvider,
-    PROVIDER_ID,
-    algosigner,
-    useWallet
-} from "@txnlab/use-wallet";
+import React, { useMemo } from 'react';
+import { WalletProvider } from "@txnlab/use-wallet-react";
+import { WalletId, WalletManager } from "@txnlab/use-wallet";
 import Connect from "./components/Connect";
 import Transact from "./components/Transact";
-import { DeflyWalletConnect } from '@blockshake/defly-connect'
-import { PeraWalletConnect } from '@perawallet/connect'
-import { DaffiWalletConnect } from '@daffiwallet/connect'
-import MyAlgoConnect from '@randlabs/myalgo-connect';
-import { WalletConnectModalSign } from '@walletconnect/modal-sign-html'
-
-
 
 export default function Payment() {
-    const walletProviders = useInitializeProviders({
-        providers: [
-            { id: PROVIDER_ID.DEFLY, clientStatic: DeflyWalletConnect },
-            { id: PROVIDER_ID.PERA, clientStatic: PeraWalletConnect },
-            { id: PROVIDER_ID.DAFFI, clientStatic: DaffiWalletConnect },
-            { id: PROVIDER_ID.MYALGO, clientStatic: MyAlgoConnect },
-            {
-                id: PROVIDER_ID.WALLETCONNECT,
-                clientStatic: WalletConnectModalSign,
-                clientOptions: {
-                    projectId: '74761852c2f607c540bb116a1bc9f011',
-                    metadata: {
-                        name: 'Example Dapp',
-                        description: 'Example Dapp',
-                        url: '#',
-                        icons: ['https://walletconnect.com/walletconnect-logo.png']
+    const walletConnectProjectId = process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || '74761852c2f607c540bb116a1bc9f011';
+    const walletManager = useMemo(
+        () =>
+            new WalletManager({
+                wallets: [
+                    WalletId.DEFLY,
+                    WalletId.PERA,
+                    {
+                        id: WalletId.WALLETCONNECT,
+                        options: {
+                            projectId: walletConnectProjectId,
+                            metadata: {
+                                name: 'BYOD License',
+                                description: 'BYOD license payment dapp',
+                                url: 'https://byod.frynetworks.com',
+                                icons: ['https://walletconnect.com/walletconnect-logo.png']
+                            }
+                        }
                     }
-                }
-            }
-        ]
-    })
-    useEffect(() => {
-        if (walletProviders !== null) {
-            reconnectProviders(walletProviders);
-        }
-    }, []);
+                ]
+            }),
+        [walletConnectProjectId]
+    );
+
     return (
         <div
             style={{
                 ...containerStyle
             }}
         >
-            <WalletProvider value={walletProviders} >
+            <WalletProvider manager={walletManager}>
                 <div style={{
                     ...cardStyle,
                     width: '100vw'

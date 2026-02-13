@@ -1,5 +1,5 @@
 import React from "react";
-import { Provider, useWallet } from "@txnlab/use-wallet";
+import { Wallet, useWallet } from "@txnlab/use-wallet-react";
 
 // Define styles for the buttons and select
 const elementStyle = {
@@ -17,7 +17,7 @@ const elementStyle = {
 };
 
 interface ButtonProps {
-  provider: Provider;
+  provider: Wallet;
   style: React.CSSProperties;
   activeAccount?: any;
 }
@@ -63,10 +63,10 @@ const AccountSelect = ({ provider, style, activeAccount }: ButtonProps) => (
 );
 
 export default function Connect() {
-  const { providers, activeAccount } = useWallet();
+  const { wallets, activeAccount } = useWallet();
 
   // Check if any provider is connected
-  const anyConnected = providers?.some(provider => provider.isConnected);
+  const anyConnected = wallets?.some((wallet) => wallet.isConnected);
 
   return (
     <div style={{
@@ -77,9 +77,9 @@ export default function Connect() {
       alignItems: 'center',
       textAlign: 'center'
     }}>
-      {providers?.map((provider) => (
+      {wallets?.map((provider) => (
         (provider.isConnected || !anyConnected) && (
-          <div key={"provider-" + provider.metadata.id} style={{
+          <div key={"provider-" + provider.walletKey} style={{
             margin: '0 20px',
             display: 'flex',
             flexDirection: 'column',
@@ -100,7 +100,7 @@ export default function Connect() {
             {!anyConnected && <ConnectButton provider={provider} style={elementStyle} />}
 
             {/* Show the account select if the provider is connected */}
-            {provider.isConnected && provider.isActive && provider.accounts.length && (
+            {provider.isConnected && provider.isActive && provider.accounts.length > 0 && (
                  <AccountSelect
                  provider={provider}
                  style={{

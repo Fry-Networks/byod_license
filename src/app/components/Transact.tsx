@@ -1,5 +1,5 @@
-import React, { useContext, useState } from "react";
-import { useWallet } from "@txnlab/use-wallet";
+import React, { useState } from "react";
+import { useWallet } from "@txnlab/use-wallet-react";
 import algosdk from "algosdk";
 import {
   createLicense,
@@ -58,7 +58,7 @@ export const MessagesContext = React.createContext<MessagesState | undefined>(
 const nfFryDomain = "https://api.nf.domains/nfd/fry.algo";
 
 export default function Transact() {
-  const { activeAddress, signTransactions, sendTransactions } = useWallet();
+  const { activeAddress, signTransactions } = useWallet();
   const [email, setEmail] = useState("");
   const [valid, setValid] = useState(false);
   const [modalIsOpen, setModalIsOpen] = useState(false);
@@ -109,6 +109,25 @@ export default function Transact() {
     return null;
   };
 
+  const submitSignedTransactions = async (
+    signedTransactions: (Uint8Array | null)[],
+    waitRoundsToConfirm: number
+  ) => {
+    const signedBlobs = signedTransactions.filter(
+      (txn): txn is Uint8Array => txn instanceof Uint8Array
+    );
+
+    if (!signedBlobs.length) {
+      throw new Error("No signed transactions were returned by the wallet.");
+    }
+
+    const payload = signedBlobs.length === 1 ? signedBlobs[0] : signedBlobs;
+    const { txid } = await algodClient.sendRawTransaction(payload).do();
+    await algosdk.waitForConfirmation(algodClient, txid, waitRoundsToConfirm);
+
+    return txid;
+  };
+
   const sendAlgoTransaction = async (from: string, email: string) => {
     const USDAmount =
       process.env.NODE_ENV === "production"
@@ -127,8 +146,8 @@ export default function Transact() {
     else return;
     const note = algosdk.encodeObj({ note: "Payment from Pera Wallet" });
     const transaction = algosdk.makePaymentTxnWithSuggestedParamsFromObject({
-      from,
-      to,
+      sender: from,
+      receiver: to,
       amount: price * 1000000,
       note: note,
       suggestedParams: params,
@@ -146,7 +165,7 @@ export default function Transact() {
           color: "#000",
         },
       });
-      const { id } = await sendTransactions(
+      const id = await submitSignedTransactions(
         signedTransactions,
         waitRoundsToConfirm
       );
@@ -237,8 +256,8 @@ export default function Transact() {
     const note = algosdk.encodeObj({ note: "BYOD Payment" });
     const transaction =
       algosdk.makeAssetTransferTxnWithSuggestedParamsFromObject({
-        from,
-        to: burn,
+        sender: from,
+        receiver: burn,
         assetIndex: FRYIndex,
         amount: price * 1000000,
         note: note,
@@ -256,7 +275,7 @@ export default function Transact() {
           color: "#000",
         },
       });
-      const { id } = await sendTransactions(
+      const id = await submitSignedTransactions(
         signedTransactions,
         waitRoundsToConfirm
       );

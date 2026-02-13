@@ -35,18 +35,20 @@ export async function confirmTransaction(
     .pendingTransactionInformation(txId)
     .do();
   console.log("Got transaction info: " + JSON.stringify(confirmedTxn));
+  const txnData = confirmedTxn.txn?.txn as Record<string, any> | undefined;
+  if (!txnData) return 6;
 
   // Check if the receiver is correct
   const actualReceiverField = asset === "algo" ? "rcv" : "arcv";
-  const actualReceiver = algosdk.encodeAddress(
-    confirmedTxn["txn"]["txn"][actualReceiverField]
-  );
+  const actualReceiverBytes = txnData[actualReceiverField];
+  if (!actualReceiverBytes) return 2;
+  const actualReceiver = algosdk.encodeAddress(actualReceiverBytes);
   const receiver = asset === "algo" ? algoReceiver : fryReceiver;
   if (actualReceiver !== receiver) return 2;
 
   // Check if the amount is correct (assuming price is in MicroAlgos)
   const amountField = asset === "algo" ? "amt" : "aamt";
-  const amount = confirmedTxn["txn"]["txn"][amountField] || 0; // Default to 0 if amt field is missing
+  const amount = Number(txnData[amountField] || 0); // Default to 0 if amt field is missing
   if (amount < lowerBound || amount > upperBound) return 3;
 
   // If everything passed return true
@@ -54,7 +56,9 @@ export async function confirmTransaction(
     let user = await getUser(email);
     if (!user) return 4;
     user[asset] = true;
-    if (!user.address) user.address = confirmedTxn["txn"]["txn"]["snd"];
+    if (!user.address && txnData.snd) {
+      user.address = algosdk.encodeAddress(txnData.snd);
+    }
     setUser(user);
   } catch (error) {
     console.error(error);

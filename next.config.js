@@ -1,4 +1,6 @@
 /** @type {import('next').NextConfig} */
+const { webpackFallback } = require("@txnlab/use-wallet");
+
 const nextConfig = {
     images: {
         domains: ['localhost', 'res.cloudinary.com', 'static.wixstatic.com']
@@ -45,6 +47,13 @@ const nextConfig = {
                 ],
             },
         ]
+    },
+    webpack: (config) => {
+        config.resolve.fallback = {
+            ...(config.resolve.fallback || {}),
+            ...webpackFallback
+        };
+        return config;
     }
 
 }

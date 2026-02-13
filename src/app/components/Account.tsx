@@ -1,8 +1,8 @@
 import React from "react";
-import { useWallet } from "@txnlab/use-wallet";
+import { useWallet } from "@txnlab/use-wallet-react";
 
 export default function Account() {
-  const { activeAccount } = useWallet();
+  const { activeAccount, activeWallet } = useWallet();
 
   if (!activeAccount) {
     return <p>Connect an account first.</p>;
@@ -18,7 +18,7 @@ export default function Account() {
         Address: <span>{activeAccount.address}</span>
       </p>
       <p>
-        Provider: <span>{activeAccount.providerId}</span>
+        Provider: <span>{activeWallet?.metadata?.name || "Unknown"}</span>
       </p>
     </div>
   );
