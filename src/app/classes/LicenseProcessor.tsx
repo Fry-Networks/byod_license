@@ -149,7 +149,7 @@ export async function getUser(email: string): Promise<User | null> {
 }
 export async function setUser(user: User) {
   await connect();
-  ByodModel.findOneAndUpdate({ email: user.email }, user, {
+  await ByodModel.findOneAndUpdate({ email: user.email }, user, {
     upsert: true,
     new: true,
   }).exec();
@@ -200,8 +200,8 @@ export async function addLicense(
       });
     }
     user.address = address;
-    setUser(user);
-    updateByod(user, address);
+    await setUser(user);
+    await updateByod(user, address);
   } else {
     const user = {
       email: email,
@@ -215,8 +215,8 @@ export async function addLicense(
         },
       ],
     };
-    setUser(user);
-    updateByod(user, address);
+    await setUser(user);
+    await updateByod(user, address);
   }
 }
 
@@ -266,7 +266,7 @@ export async function createUser(email: string) {
     algo: true,
     fry: false,
   };
-  setUser(user);
+  await setUser(user);
   return user;
 }
 

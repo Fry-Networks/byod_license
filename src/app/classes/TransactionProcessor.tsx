@@ -59,7 +59,7 @@ export async function confirmTransaction(
     if (!user.address && txnData.snd) {
       user.address = algosdk.encodeAddress(txnData.snd);
     }
-    setUser(user);
+    await setUser(user);
   } catch (error) {
     console.error(error);
     return 5;

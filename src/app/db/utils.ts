@@ -62,7 +62,7 @@ export async function updateByod(byod: ByodUser, address: string) {
           .filter((payment) => !user.byod.payments!.includes(payment))
       : [];
 
-    UserModel.updateOne(
+    await UserModel.updateOne(
       { _id: user._id },
       {
         $push: {

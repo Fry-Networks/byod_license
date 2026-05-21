@@ -190,9 +190,7 @@ export default function Transact() {
           },
         });
       } else {
-        const data = paymentSuccessful;
-        paymentSuccessful.algo = true;
-        setPaymentSuccessful(data);
+        setPaymentSuccessful({ ...paymentSuccessful, algo: true });
         setMessages({
           ...messages,
           algo: {
@@ -251,7 +249,8 @@ export default function Transact() {
       });
     }
 
-    const FRYIndex = Number((await fetchPrice()).asset_id) ?? 2485314946;
+    const priceData = await fetchPrice();
+    const FRYIndex = priceData?.asset_id ? Number(priceData.asset_id) : 2485314946;
 
     const note = algosdk.encodeObj({ note: "BYOD Payment" });
     const transaction =
@@ -299,9 +298,7 @@ export default function Transact() {
           },
         });
       } else if (license) {
-        const data = paymentSuccessful;
-        paymentSuccessful.fry = true;
-        setPaymentSuccessful(data);
+        setPaymentSuccessful({ ...paymentSuccessful, fry: true });
         setMessages({
           ...messages,
           fry: {

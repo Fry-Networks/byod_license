@@ -9,7 +9,7 @@ const EmailInput = ({ email, setEmail, setValid }: { email: string, setEmail: Fu
     data-form-type="other"
     onChange={e => {
       setEmail(e.target.value);
-      setValid(/\S+@\S+\.\S+/g.test(e.target.value));
+      setValid(/\S+@\S+\.\S+/.test(e.target.value));
     }}
     placeholder="Enter your email"
     style={emailInputStyle}
